@@ -23,7 +23,7 @@ export function serializeError(details: unknown): string {
 
 export function parseErrorDetails(
   details: ErrorMessageType,
-  messagePrefix: string,
+  messagePrefix: string
 ): { message: string; error: Error | undefined } {
   let message = '';
   let error: Error | undefined;
@@ -40,7 +40,11 @@ export function parseErrorDetails(
       message = serializeError(details.error);
     }
   }
-  if ('message' in details && typeof details.message === 'string' && details.message) {
+  if (
+    'message' in details &&
+    typeof details.message === 'string' &&
+    details.message
+  ) {
     message = message ? details.message + ' - ' + message : details.message;
   }
   if (!message) {

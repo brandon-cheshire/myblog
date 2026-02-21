@@ -3,9 +3,9 @@ import { useLocation } from 'react-router-dom';
 import { Banner } from './Banner';
 
 interface MainLayoutProps {
-  children: ReactNode
-  title?: string
-  subtitle?: string
+  children: ReactNode;
+  title?: string;
+  subtitle?: string;
 }
 
 export function MainLayout({ children, title, subtitle }: MainLayoutProps) {
@@ -31,9 +31,7 @@ export function MainLayout({ children, title, subtitle }: MainLayoutProps) {
             {subtitle && <p>{subtitle}</p>}
           </div>
         )}
-        <div className="page-container">
-          {children}
-        </div>
+        <div className="page-container">{children}</div>
       </main>
     </div>
   );

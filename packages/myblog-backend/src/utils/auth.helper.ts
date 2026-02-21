@@ -20,7 +20,10 @@ function getTokenFromRequest(req: Request): string | null {
   return null;
 }
 
-export async function getAuthenticatedUser(ctx: { req: Request }, omitSecondFactor = false): Promise<User> {
+export async function getAuthenticatedUser(
+  ctx: { req: Request },
+  omitSecondFactor = false
+): Promise<User> {
   const token = getTokenFromRequest(ctx.req);
 
   if (!token) {
@@ -33,7 +36,10 @@ export async function getAuthenticatedUser(ctx: { req: Request }, omitSecondFact
   }
 
   try {
-    const verificationResponse = jwt.verify(token, secret) as unknown as DataStoredInToken;
+    const verificationResponse = jwt.verify(
+      token,
+      secret
+    ) as unknown as DataStoredInToken;
     const { _id: id, isSecondFactorAuthenticated } = verificationResponse;
     const user = await db
       .selectFrom('User')
@@ -80,22 +86,31 @@ export async function getAuthenticatedUser(ctx: { req: Request }, omitSecondFact
       verificationCodeExpiresAt: user.verificationCodeExpiresAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      address: user.address_id ? {
-        id: user.address_id,
-        street: user.street!,
-        city: user.city!,
-        country: user.country!,
-        userId: user.userId!,
-      } : null,
+      address: user.address_id
+        ? {
+            id: user.address_id,
+            street: user.street!,
+            city: user.city!,
+            country: user.country!,
+            userId: user.userId!,
+          }
+        : null,
     };
 
-    if (!omitSecondFactor && userWithAddress.isTwoFactorAuthenticationEnabled && !isSecondFactorAuthenticated) {
+    if (
+      !omitSecondFactor &&
+      userWithAddress.isTwoFactorAuthenticationEnabled &&
+      !isSecondFactorAuthenticated
+    ) {
       throw new WrongAuthenticationTokenException();
     }
 
     return userWithAddress;
   } catch (error) {
-    if (error instanceof WrongAuthenticationTokenException || error instanceof AuthenticationTokenMissingException) {
+    if (
+      error instanceof WrongAuthenticationTokenException ||
+      error instanceof AuthenticationTokenMissingException
+    ) {
       throw error;
     }
     throw new WrongAuthenticationTokenException();

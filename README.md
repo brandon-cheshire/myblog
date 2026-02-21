@@ -54,13 +54,13 @@ npm run dev
 
 ## Scripts
 
-| Command       | Description                                      |
-|---------------|--------------------------------------------------|
-| `npm run dev` | Start backend + frontend (concurrently)          |
-| `npm run migrate` | Run DB migrations (backend)                  |
-| `npm run seed` | Seed database (backend)                         |
-| `npm run lint` | Lint entire repo                                |
-| `npm run knip` | Find unused files, dependencies, exports        |
+| Command           | Description                              |
+| ----------------- | ---------------------------------------- |
+| `npm run dev`     | Start backend + frontend (concurrently)  |
+| `npm run migrate` | Run DB migrations (backend)              |
+| `npm run seed`    | Seed database (backend)                  |
+| `npm run lint`    | Lint entire repo                         |
+| `npm run knip`    | Find unused files, dependencies, exports |
 
 ## Project layout
 
@@ -73,8 +73,8 @@ packages/
 
 ## PgAdmin (optional)
 
-- URL: http://localhost:5050  
-- Email: `admin@admin.com` (from `PGADMIN_DEFAULT_EMAIL`)  
-- Password: `admin` (from `PGADMIN_DEFAULT_PASSWORD`)  
+- URL: http://localhost:5050
+- Email: `admin@admin.com` (from `PGADMIN_DEFAULT_EMAIL`)
+- Password: `admin` (from `PGADMIN_DEFAULT_PASSWORD`)
 
 Add a server with host `postgres`, port `5432`, user/password/database from `packages/myblog-backend/.env` (e.g. `admin` / `admin` / `tutorial`).

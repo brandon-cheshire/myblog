@@ -22,7 +22,10 @@ export const userRouter = s.router(userContract, {
       const user = await userService.getUserById(ctx.params.id);
       return { status: 200 as const, body: user };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'getUser' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'getUser',
+      }) as never;
     }
   },
 
@@ -31,7 +34,10 @@ export const userRouter = s.router(userContract, {
       const user = await userService.getUserByUsername(ctx.params.username);
       return { status: 200 as const, body: user };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'getUserByUsername' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'getUserByUsername',
+      }) as never;
     }
   },
 
@@ -45,7 +51,10 @@ export const userRouter = s.router(userContract, {
       });
       return { status: 200 as const, body: updatedUser };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'updateUsername' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'updateUsername',
+      }) as never;
     }
   },
 
@@ -56,7 +65,10 @@ export const userRouter = s.router(userContract, {
       const posts = await postService.getPostsByAuthorId(userId);
       return { status: 200 as const, body: posts };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'getUserPosts' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'getUserPosts',
+      }) as never;
     }
   },
 
@@ -66,7 +78,10 @@ export const userRouter = s.router(userContract, {
 
       let file: Express.Multer.File;
       try {
-        file = await processMulterUpload(ctx.req as Request, ctx.res as Response);
+        file = await processMulterUpload(
+          ctx.req as Request,
+          ctx.res as Response
+        );
       } catch (uploadError: unknown) {
         const err = uploadError as { message?: string; code?: string };
         if (err.message === 'No file uploaded') {
@@ -87,7 +102,10 @@ export const userRouter = s.router(userContract, {
       });
       return { status: 200 as const, body: result };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'uploadProfilePicture' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'uploadProfilePicture',
+      }) as never;
     }
   },
 });

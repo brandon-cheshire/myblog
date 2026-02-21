@@ -10,7 +10,7 @@
 
 /* Light theme (default) */
 :root,
-[data-theme="light"] {
+[data-theme='light'] {
   --bg-primary: #f0f0f0;
   --bg-secondary: #ffffff;
   --bg-tertiary: #e9ecef;
@@ -29,7 +29,7 @@
 }
 
 /* Dark theme */
-[data-theme="dark"] {
+[data-theme='dark'] {
   --bg-primary: #1a1a1a;
   --bg-secondary: #242424;
   --bg-tertiary: #2d2d2d;
@@ -48,8 +48,8 @@
 }
 
 :root,
-[data-theme="light"],
-[data-theme="dark"] {
+[data-theme='light'],
+[data-theme='dark'] {
   color: var(--text-primary);
   background-color: var(--bg-primary);
 }

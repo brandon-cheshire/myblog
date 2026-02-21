@@ -8,7 +8,9 @@ export function setRootLogger(logger: pino.Logger): void {
 
 export function getRootLogger(): pino.Logger {
   if (!rootLogger) {
-    throw new Error('Logging not initialized: setRootLogger() must be called before creating AppLogger');
+    throw new Error(
+      'Logging not initialized: setRootLogger() must be called before creating AppLogger'
+    );
   }
   return rootLogger;
 }

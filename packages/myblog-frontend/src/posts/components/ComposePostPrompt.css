@@ -16,7 +16,7 @@
 }
 
 /* Make border more visible in light theme */
-[data-theme="light"] .compose-post-prompt {
+[data-theme='light'] .compose-post-prompt {
   border-color: #d0d0d0;
 }
 

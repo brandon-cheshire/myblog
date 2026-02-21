@@ -4,12 +4,16 @@ import type { FormEvent } from 'react';
 import { tsrClient } from '../../api/tsrClient';
 
 interface ComposePostProps {
-  onClose?: (force?: boolean) => void
-  onHasUnsavedChanges?: (hasChanges: boolean) => void
-  editPostId?: string
+  onClose?: (force?: boolean) => void;
+  onHasUnsavedChanges?: (hasChanges: boolean) => void;
+  editPostId?: string;
 }
 
-export function ComposePost({ onClose, onHasUnsavedChanges, editPostId }: ComposePostProps = {}) {
+export function ComposePost({
+  onClose,
+  onHasUnsavedChanges,
+  editPostId,
+}: ComposePostProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -22,7 +26,9 @@ export function ComposePost({ onClose, onHasUnsavedChanges, editPostId }: Compos
 
   const getPostQuery = tsrClient.posts.getPost.useQuery({
     queryKey: ['post', editId ?? ''],
-    queryData: editId ? { params: { id: editId } } : ({} as { params: { id: string } }),
+    queryData: editId
+      ? { params: { id: editId } }
+      : ({} as { params: { id: string } }),
     enabled: !!editId,
   });
 
@@ -34,7 +40,9 @@ export function ComposePost({ onClose, onHasUnsavedChanges, editPostId }: Compos
   const error = getPostQuery.error
     ? 'Failed to load post for editing'
     : createMutation.error || updateMutation.error
-      ? (createMutation.error as Error)?.message ?? (updateMutation.error as Error)?.message ?? 'Failed to save post'
+      ? ((createMutation.error as Error)?.message ??
+        (updateMutation.error as Error)?.message ??
+        'Failed to save post')
       : null;
 
   useEffect(() => {
@@ -52,12 +60,14 @@ export function ComposePost({ onClose, onHasUnsavedChanges, editPostId }: Compos
   }, [editId, editingPost]);
 
   useEffect(() => {
-    const hasChanges = title.trim() !== initialTitle || content.trim() !== initialContent;
+    const hasChanges =
+      title.trim() !== initialTitle || content.trim() !== initialContent;
     onHasUnsavedChanges?.(hasChanges);
   }, [title, content, initialTitle, initialContent, onHasUnsavedChanges]);
 
   useEffect(() => {
-    const hasChanges = title.trim() !== initialTitle || content.trim() !== initialContent;
+    const hasChanges =
+      title.trim() !== initialTitle || content.trim() !== initialContent;
     if (hasChanges) {
       const handleBeforeUnload = (e: BeforeUnloadEvent) => {
         e.preventDefault();
@@ -65,7 +75,8 @@ export function ComposePost({ onClose, onHasUnsavedChanges, editPostId }: Compos
         return '';
       };
       window.addEventListener('beforeunload', handleBeforeUnload);
-      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+      return () =>
+        window.removeEventListener('beforeunload', handleBeforeUnload);
     }
   }, [title, content, initialTitle, initialContent]);
 
@@ -79,7 +90,10 @@ export function ComposePost({ onClose, onHasUnsavedChanges, editPostId }: Compos
 
     try {
       if (editingPost) {
-        await updateMutation.mutateAsync({ params: { id: editingPost._id }, body: postData });
+        await updateMutation.mutateAsync({
+          params: { id: editingPost._id },
+          body: postData,
+        });
       } else {
         await createMutation.mutateAsync({ body: postData });
       }
@@ -142,7 +156,11 @@ export function ComposePost({ onClose, onHasUnsavedChanges, editPostId }: Compos
             Cancel
           </button>
           <button type="submit" disabled={loading} className="submit-btn">
-            {loading ? 'Saving...' : editingPost ? 'Update Post' : 'Publish Post'}
+            {loading
+              ? 'Saving...'
+              : editingPost
+                ? 'Update Post'
+                : 'Publish Post'}
           </button>
         </div>
       </form>

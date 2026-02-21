@@ -8,17 +8,19 @@ import type { ReactNode } from 'react';
 const AUTH_ME_QUERY_KEY = ['auth', 'me'] as const;
 
 interface AuthContextType {
-  user: User | null
-  loading: boolean
-  requiresTwoFactor: boolean
-  tempCredentials: { email: string; password: string } | null
-  login: (email: string, password: string) => Promise<void>
-  authenticateTwoFactor: (code: string) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
-  logout: () => Promise<void>
-  refreshUser: () => Promise<void>
-  setRequiresTwoFactor: (requires: boolean) => void
-  setTempCredentials: (credentials: { email: string; password: string } | null) => void
+  user: User | null;
+  loading: boolean;
+  requiresTwoFactor: boolean;
+  tempCredentials: { email: string; password: string } | null;
+  login: (email: string, password: string) => Promise<void>;
+  authenticateTwoFactor: (code: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+  setRequiresTwoFactor: (requires: boolean) => void;
+  setTempCredentials: (
+    credentials: { email: string; password: string } | null
+  ) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -52,14 +54,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  const authenticateTwoFactorMutation = tsrClient.auth.authenticateTwoFactor.useMutation({
-    onSuccess: (res) => {
-      const body = res.body as { token?: string };
-      if (body.token) {
-        localStorage.setItem('auth-token', body.token);
-      }
-    },
-  });
+  const authenticateTwoFactorMutation =
+    tsrClient.auth.authenticateTwoFactor.useMutation({
+      onSuccess: (res) => {
+        const body = res.body as { token?: string };
+        if (body.token) {
+          localStorage.setItem('auth-token', body.token);
+        }
+      },
+    });
 
   const logoutMutation = tsrClient.auth.logout.useMutation({
     onSuccess: () => {
@@ -71,16 +74,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loading = getCurrentUserQuery.isLoading;
 
   const [requiresTwoFactorState, setRequiresTwoFactorState] = useState(false);
-  const [tempCredentialsState, setTempCredentialsState] = useState<{ email: string; password: string } | null>(null);
+  const [tempCredentialsState, setTempCredentialsState] = useState<{
+    email: string;
+    password: string;
+  } | null>(null);
 
-  const setRequiresTwoFactor = (requires: boolean) => setRequiresTwoFactorState(requires);
-  const setTempCredentials = (credentials: { email: string; password: string } | null) =>
-    setTempCredentialsState(credentials);
+  const setRequiresTwoFactor = (requires: boolean) =>
+    setRequiresTwoFactorState(requires);
+  const setTempCredentials = (
+    credentials: { email: string; password: string } | null
+  ) => setTempCredentialsState(credentials);
 
   const login = async (email: string, password: string) => {
     try {
-      const result = await loginMutation.mutateAsync({ body: { email, password } });
-      const body = result.body as { isTwoFactorAuthenticationEnabled?: boolean; token?: string };
+      const result = await loginMutation.mutateAsync({
+        body: { email, password },
+      });
+      const body = result.body as {
+        isTwoFactorAuthenticationEnabled?: boolean;
+        token?: string;
+      };
       if (body.isTwoFactorAuthenticationEnabled) {
         setRequiresTwoFactorState(true);
         setTempCredentialsState({ email, password });
@@ -93,11 +106,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await queryClient.refetchQueries({ queryKey: AUTH_ME_QUERY_KEY });
       navigate('/');
     } catch (err) {
-      const message = err && typeof err === 'object' && 'body' in err
-        ? (err as { body?: { message?: string } }).body?.message
-        : err instanceof Error
-          ? err.message
-          : 'Login failed';
+      const message =
+        err && typeof err === 'object' && 'body' in err
+          ? (err as { body?: { message?: string } }).body?.message
+          : err instanceof Error
+            ? err.message
+            : 'Login failed';
       throw new Error(message);
     }
   };
@@ -127,7 +141,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.replace('/');
   };
 
-  const refreshUser = () => queryClient.invalidateQueries({ queryKey: AUTH_ME_QUERY_KEY });
+  const refreshUser = () =>
+    queryClient.invalidateQueries({ queryKey: AUTH_ME_QUERY_KEY });
 
   const value: AuthContextType = {
     user,
@@ -143,11 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTempCredentials,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components -- context hook, not a component

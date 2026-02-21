@@ -7,8 +7,8 @@ import type { UserStatusType } from '@myblog/shared';
 
 export class UserRepository {
   /**
-     * Find a user by email
-     */
+   * Find a user by email
+   */
   async findByEmail(email: string): Promise<UserWithPasswordHash | undefined> {
     const user = await db
       .selectFrom('User')
@@ -20,8 +20,8 @@ export class UserRepository {
   }
 
   /**
-     * Find a user by ID
-     */
+   * Find a user by ID
+   */
   async findById(id: string): Promise<UserWithPasswordHash | undefined> {
     const user = await db
       .selectFrom('User')
@@ -33,9 +33,11 @@ export class UserRepository {
   }
 
   /**
-     * Find a user by username
-     */
-  async findByUsername(username: string): Promise<UserWithPasswordHash | undefined> {
+   * Find a user by username
+   */
+  async findByUsername(
+    username: string
+  ): Promise<UserWithPasswordHash | undefined> {
     const user = await db
       .selectFrom('User')
       .where('username', '=', username)
@@ -46,8 +48,8 @@ export class UserRepository {
   }
 
   /**
-     * Find a user by ID with address
-     */
+   * Find a user by ID with address
+   */
   async findByIdWithAddress(id: string) {
     const user = await db
       .selectFrom('User')
@@ -72,8 +74,8 @@ export class UserRepository {
   }
 
   /**
-     * Find a user by username with address
-     */
+   * Find a user by username with address
+   */
   async findByUsernameWithAddress(username: string) {
     const user = await db
       .selectFrom('User')
@@ -98,15 +100,15 @@ export class UserRepository {
   }
 
   /**
-     * Create a new user
-     */
+   * Create a new user
+   */
   async create(userData: {
-        name: string;
-        email: string;
-        password_hash: string;
-        status?: UserStatusType;
-        username?: string | null;
-    }): Promise<User> {
+    name: string;
+    email: string;
+    password_hash: string;
+    status?: UserStatusType;
+    username?: string | null;
+  }): Promise<User> {
     const userId = randomUUID();
     const now = new Date().toISOString();
     const newUser = await db
@@ -130,26 +132,22 @@ export class UserRepository {
   }
 
   /**
-     * Update user
-     */
+   * Update user
+   */
   async update(id: string, updates: Updateable<UserTable>): Promise<void> {
-    await db
-      .updateTable('User')
-      .set(updates)
-      .where('id', '=', id)
-      .execute();
+    await db.updateTable('User').set(updates).where('id', '=', id).execute();
   }
 
   /**
-     * Update user's 2FA code
-     */
+   * Update user's 2FA code
+   */
   async updateTwoFactorCode(id: string, code: string): Promise<void> {
     await this.update(id, { twoFactorAuthenticationCode: code });
   }
 
   /**
-     * Enable 2FA for user
-     */
+   * Enable 2FA for user
+   */
   async enableTwoFactor(id: string): Promise<void> {
     await db
       .updateTable('User')
@@ -159,8 +157,8 @@ export class UserRepository {
   }
 
   /**
-     * Disable 2FA for user
-     */
+   * Disable 2FA for user
+   */
   async disableTwoFactor(id: string): Promise<void> {
     await db
       .updateTable('User')
@@ -170,15 +168,15 @@ export class UserRepository {
   }
 
   /**
-     * Update profile picture
-     */
+   * Update profile picture
+   */
   async updateProfilePicture(id: string, filename: string): Promise<void> {
     await this.update(id, { profilePicture: filename });
   }
 
   /**
-     * Update password hash
-     */
+   * Update password hash
+   */
   async updatePassword(id: string, passwordHash: string): Promise<void> {
     await this.update(id, {
       password_hash: passwordHash,
@@ -187,9 +185,13 @@ export class UserRepository {
   }
 
   /**
-     * Update verification code and expiry
-     */
-  async updateVerificationCode(id: string, code: string, expiresAt: string): Promise<void> {
+   * Update verification code and expiry
+   */
+  async updateVerificationCode(
+    id: string,
+    code: string,
+    expiresAt: string
+  ): Promise<void> {
     await this.update(id, {
       verificationCode: code,
       verificationCodeExpiresAt: expiresAt,
@@ -198,8 +200,8 @@ export class UserRepository {
   }
 
   /**
-     * Clear verification code
-     */
+   * Clear verification code
+   */
   async clearVerificationCode(id: string): Promise<void> {
     await this.update(id, {
       verificationCode: null,
@@ -209,26 +211,29 @@ export class UserRepository {
   }
 
   /**
-     * Update user status
-     */
+   * Update user status
+   */
   async updateStatus(id: string, status: UserStatusType): Promise<void> {
     await this.update(id, { status });
   }
 
   /**
-     * Update username
-     */
+   * Update username
+   */
   async updateUsername(id: string, username: string): Promise<void> {
-    await this.update(id, { 
+    await this.update(id, {
       username,
       updatedAt: new Date().toISOString(),
     });
   }
 
   /**
-     * Check if username is taken
-     */
-  async isUsernameTaken(username: string, excludeUserId?: string): Promise<boolean> {
+   * Check if username is taken
+   */
+  async isUsernameTaken(
+    username: string,
+    excludeUserId?: string
+  ): Promise<boolean> {
     const query = db
       .selectFrom('User')
       .select('id')

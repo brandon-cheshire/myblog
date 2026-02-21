@@ -22,7 +22,9 @@ export function Settings() {
     return null;
   }
 
-  const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
@@ -59,10 +61,14 @@ export function Settings() {
     }
     setUsernameError(null);
     try {
-      await updateUsernameMutation.mutateAsync({ body: { username: username.trim() } });
+      await updateUsernameMutation.mutateAsync({
+        body: { username: username.trim() },
+      });
       alert('Username updated successfully!');
     } catch (err) {
-      setUsernameError(err instanceof Error ? err.message : 'Failed to update username');
+      setUsernameError(
+        err instanceof Error ? err.message : 'Failed to update username'
+      );
     }
   };
 
@@ -74,14 +80,23 @@ export function Settings() {
       {/* Profile Picture Section */}
       <div className="settings-card">
         <h3>Profile Picture</h3>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-          <div style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            overflow: 'hidden',
-            border: '2px solid var(--border-color)',
-          }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '1rem',
+          }}
+        >
+          <div
+            style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '2px solid var(--border-color)',
+            }}
+          >
             {user.profilePicture ? (
               <img
                 src={`/uploads/profile-pictures/${user.profilePicture}`}
@@ -89,17 +104,19 @@ export function Settings() {
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             ) : (
-              <div style={{
-                width: '100%',
-                height: '100%',
-                backgroundColor: 'var(--bg-secondary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--text-tertiary)',
-                fontSize: '2rem',
-              }}>
-                                👤
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  backgroundColor: 'var(--bg-secondary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--text-tertiary)',
+                  fontSize: '2rem',
+                }}
+              >
+                👤
               </div>
             )}
           </div>
@@ -119,8 +136,14 @@ export function Settings() {
               onChange={handleProfilePictureUpload}
               style={{ display: 'none' }}
             />
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)', margin: 0 }}>
-                            JPG, PNG or GIF. Max size 5MB.
+            <p
+              style={{
+                fontSize: '0.875rem',
+                color: 'var(--text-tertiary)',
+                margin: 0,
+              }}
+            >
+              JPG, PNG or GIF. Max size 5MB.
             </p>
           </div>
         </div>
@@ -128,19 +151,44 @@ export function Settings() {
 
       <div className="settings-card">
         <h3>Account Information</h3>
-        <p><strong>Name:</strong> {user.name}</p>
-        <p><strong>Email:</strong> {user.email}</p>
-        <p><strong>Member since:</strong> {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Not available'}</p>
+        <p>
+          <strong>Name:</strong> {user.name}
+        </p>
+        <p>
+          <strong>Email:</strong> {user.email}
+        </p>
+        <p>
+          <strong>Member since:</strong>{' '}
+          {user.createdAt
+            ? new Date(user.createdAt).toLocaleDateString()
+            : 'Not available'}
+        </p>
       </div>
 
       {/* Username Section */}
       <div className="settings-card">
         <h3>Username</h3>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)', marginBottom: '1rem', whiteSpace: 'pre-line' }}>
-                    Your username is used in your profile URL (e.g., /your-username).{'\n'}
-                    Must be 3-30 characters, alphanumeric with dots, hyphens, and underscores.
+        <p
+          style={{
+            fontSize: '0.875rem',
+            color: 'var(--text-tertiary)',
+            marginBottom: '1rem',
+            whiteSpace: 'pre-line',
+          }}
+        >
+          Your username is used in your profile URL (e.g., /your-username).
+          {'\n'}
+          Must be 3-30 characters, alphanumeric with dots, hyphens, and
+          underscores.
         </p>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '0.5rem',
+            alignItems: 'flex-start',
+            flexWrap: 'wrap',
+          }}
+        >
           <div style={{ flex: 1, minWidth: '200px' }}>
             <input
               type="text"
@@ -162,18 +210,29 @@ export function Settings() {
               }}
             />
             {usernameError && (
-              <p style={{ color: 'var(--error-color)', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>
+              <p
+                style={{
+                  color: 'var(--error-color)',
+                  fontSize: '0.875rem',
+                  margin: '0.25rem 0 0 0',
+                }}
+              >
                 {usernameError}
               </p>
             )}
           </div>
           <button
             onClick={handleUsernameUpdate}
-            disabled={updateUsernameMutation.isPending || username === (user.username || '')}
+            disabled={
+              updateUsernameMutation.isPending ||
+              username === (user.username || '')
+            }
             className="edit-btn"
             style={{ whiteSpace: 'nowrap' }}
           >
-            {updateUsernameMutation.isPending ? 'Updating...' : 'Update Username'}
+            {updateUsernameMutation.isPending
+              ? 'Updating...'
+              : 'Update Username'}
           </button>
         </div>
       </div>
@@ -182,7 +241,8 @@ export function Settings() {
       <div className="settings-card">
         <h3>Two-Factor Authentication</h3>
         <p className="settings-status-text">
-                    Status: {user.isTwoFactorEnabled ? (
+          Status:{' '}
+          {user.isTwoFactorEnabled ? (
             <span className="status-enabled">Enabled</span>
           ) : (
             <span className="status-disabled">Disabled</span>
@@ -190,11 +250,8 @@ export function Settings() {
         </p>
 
         {!user.isTwoFactorEnabled ? (
-          <button
-            onClick={() => setShowSetup2FA(true)}
-            className="edit-btn"
-          >
-                        Enable 2FA
+          <button onClick={() => setShowSetup2FA(true)} className="edit-btn">
+            Enable 2FA
           </button>
         ) : (
           <button
@@ -211,7 +268,7 @@ export function Settings() {
             disabled={turnOffTwoFactorMutation.isPending}
             className="delete-btn"
           >
-                        Disable 2FA
+            Disable 2FA
           </button>
         )}
 
@@ -231,19 +288,24 @@ export function Settings() {
       <div className="settings-card">
         <h3>Danger Zone</h3>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                    Once you delete your account, there is no going back. Please be certain.
+          Once you delete your account, there is no going back. Please be
+          certain.
         </p>
         <button
           className="delete-btn"
           onClick={() => {
-            if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            if (
+              window.confirm(
+                'Are you sure you want to delete your account? This action cannot be undone.'
+              )
+            ) {
               // Handle account deletion
               console.log('Account deletion requested');
             }
           }}
           style={{ padding: '0.75rem 1.5rem' }}
         >
-                    Delete Account
+          Delete Account
         </button>
       </div>
     </div>

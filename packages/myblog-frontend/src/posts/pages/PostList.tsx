@@ -26,11 +26,7 @@ export function PostList() {
     <div className="card">
       <div className="feed-container">
         <ComposePostPrompt />
-        {error && (
-          <p style={{ color: 'var(--error-color)' }}>
-            Error: {error}
-          </p>
-        )}
+        {error && <p style={{ color: 'var(--error-color)' }}>Error: {error}</p>}
         {!loading && !error && posts.length === 0 && (
           <p style={{ color: 'var(--success-color)', marginTop: '10px' }}>
             No posts in database yet.
@@ -40,8 +36,12 @@ export function PostList() {
       {!loading && posts.length > 0 && (
         <div className="posts-feed">
           {[...posts]
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-            .map(post => (
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )
+            .map((post) => (
               <PostItem
                 key={post._id}
                 post={post}
@@ -67,7 +67,7 @@ export function PostList() {
               </button>
             </div>
             <div className="compose-overlay-body">
-              <ComposePost 
+              <ComposePost
                 editPostId={editingPostId || undefined}
                 onClose={handlePostSaved}
                 onHasUnsavedChanges={handleUnsavedChangesChange}

@@ -3,10 +3,20 @@
  * Conventions: use .warn for auth failures and expected 4xx; use .error for 5xx and unexpected errors.
  * Avoid logging PII (passwords, tokens, full user objects).
  */
-const log = (level: 'info' | 'warn' | 'error', name: string, message: string, meta?: Record<string, unknown>) => {
+const log = (
+  level: 'info' | 'warn' | 'error',
+  name: string,
+  message: string,
+  meta?: Record<string, unknown>
+) => {
   const prefix = `[${name}]`;
   const payload = meta ? ` ${JSON.stringify(meta)}` : '';
-  const fn = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
+  const fn =
+    level === 'error'
+      ? console.error
+      : level === 'warn'
+        ? console.warn
+        : console.log;
   fn(`${prefix} ${message}${payload}`);
 };
 

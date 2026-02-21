@@ -3,10 +3,12 @@ import { tsrClient } from '../../api/tsrClient';
 import { usePostsContext } from '../context/PostsContext';
 
 interface UsePostOperationsOptions {
-  onPostSaved?: () => void
+  onPostSaved?: () => void;
 }
 
-export function usePostOperations({ onPostSaved }: UsePostOperationsOptions = {}) {
+export function usePostOperations({
+  onPostSaved,
+}: UsePostOperationsOptions = {}) {
   const { refreshAllPosts } = usePostsContext();
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -46,7 +48,7 @@ export function usePostOperations({ onPostSaved }: UsePostOperationsOptions = {}
   const handleCloseOverlay = (force?: boolean) => {
     if (!force && hasUnsavedChanges) {
       const confirmed = window.confirm(
-        'You have unsaved changes. Are you sure you want to close? Your changes will be lost.',
+        'You have unsaved changes. Are you sure you want to close? Your changes will be lost.'
       );
       if (!confirmed) {
         return;

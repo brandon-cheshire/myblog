@@ -11,7 +11,9 @@ export class AppLogger {
     this.logger = getRootLogger().child({ context: this.context ?? '' });
   }
 
-  private mergeContext(data?: Record<string, unknown>): Record<string, unknown> {
+  private mergeContext(
+    data?: Record<string, unknown>
+  ): Record<string, unknown> {
     const store = getRequestContext();
     const base = store ? { correlationId: store.correlationId } : {};
     return data ? { ...base, ...data } : base;

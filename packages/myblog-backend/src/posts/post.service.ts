@@ -9,36 +9,38 @@ export class PostService {
   private postRepository = new PostRepository();
 
   /**
-     * Transform PostWithAuthor to PostResponse format
-     */
+   * Transform PostWithAuthor to PostResponse format
+   */
   private transformPost(post: PostWithAuthor): PostResponse {
     return {
       _id: post.id,
       title: post.title,
       content: post.content,
-      author: post.authorId ? {
-        _id: post.authorId,
-        name: post.name!,
-        email: post.email!,
-        username: post.username || undefined,
-        profilePicture: post.profilePicture || undefined,
-      } : undefined,
+      author: post.authorId
+        ? {
+            _id: post.authorId,
+            name: post.name!,
+            email: post.email!,
+            username: post.username || undefined,
+            profilePicture: post.profilePicture || undefined,
+          }
+        : undefined,
       createdAt: post.createdAt.toISOString(),
       updatedAt: post.updatedAt.toISOString(),
     };
   }
 
   /**
-     * Get all posts
-     */
+   * Get all posts
+   */
   async getAllPosts(): Promise<PostResponse[]> {
     const posts = await this.postRepository.findAll();
-    return posts.map(post => this.transformPost(post));
+    return posts.map((post) => this.transformPost(post));
   }
 
   /**
-     * Get a post by ID
-     */
+   * Get a post by ID
+   */
   async getPostById(id: string): Promise<PostResponse> {
     const post = await this.postRepository.findById(id);
     if (!post) {
@@ -48,21 +50,21 @@ export class PostService {
   }
 
   /**
-     * Get posts by author ID
-     */
+   * Get posts by author ID
+   */
   async getPostsByAuthorId(authorId: string): Promise<PostResponse[]> {
     const posts = await this.postRepository.findByAuthorId(authorId);
-    return posts.map(post => this.transformPost(post));
+    return posts.map((post) => this.transformPost(post));
   }
 
   /**
-     * Create a new post
-     */
+   * Create a new post
+   */
   async createPost(data: {
-        title: string;
-        content: string;
-        authorId: string;
-    }): Promise<PostResponse> {
+    title: string;
+    content: string;
+    authorId: string;
+  }): Promise<PostResponse> {
     const postId = randomUUID();
     const now = new Date();
 
@@ -86,12 +88,16 @@ export class PostService {
   }
 
   /**
-     * Update a post
-     */
-  async updatePost(postId: string, authorId: string, updates: {
-        title?: string;
-        content?: string;
-    }): Promise<PostResponse> {
+   * Update a post
+   */
+  async updatePost(
+    postId: string,
+    authorId: string,
+    updates: {
+      title?: string;
+      content?: string;
+    }
+  ): Promise<PostResponse> {
     // Verify post exists and belongs to user
     const post = await this.postRepository.findById(postId);
     if (!post) {
@@ -120,8 +126,8 @@ export class PostService {
   }
 
   /**
-     * Delete a post
-     */
+   * Delete a post
+   */
   async deletePost(postId: string, authorId: string): Promise<void> {
     // Verify post exists and belongs to user
     const post = await this.postRepository.findById(postId);

@@ -1,22 +1,22 @@
 import { db } from '../utils/database';
 
 export interface PostWithAuthor {
-    id: string;
-    title: string;
-    content: string;
-    authorId: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    name: string | null;
-    email: string | null;
-    username: string | null;
-    profilePicture: string | null;
+  id: string;
+  title: string;
+  content: string;
+  authorId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  name: string | null;
+  email: string | null;
+  username: string | null;
+  profilePicture: string | null;
 }
 
 export class PostRepository {
   /**
-     * Find all posts with author information
-     */
+   * Find all posts with author information
+   */
   async findAll(): Promise<PostWithAuthor[]> {
     const posts = await db
       .selectFrom('posts')
@@ -35,13 +35,13 @@ export class PostRepository {
       ])
       .orderBy('posts.createdAt', 'desc')
       .execute();
-        
+
     return posts as PostWithAuthor[];
   }
 
   /**
-     * Find a post by ID with author information
-     */
+   * Find a post by ID with author information
+   */
   async findById(id: string): Promise<PostWithAuthor | undefined> {
     const post = await db
       .selectFrom('posts')
@@ -60,13 +60,13 @@ export class PostRepository {
         'User.profilePicture',
       ])
       .executeTakeFirst();
-        
+
     return post as PostWithAuthor | undefined;
   }
 
   /**
-     * Find posts by author ID
-     */
+   * Find posts by author ID
+   */
   async findByAuthorId(authorId: string): Promise<PostWithAuthor[]> {
     const posts = await db
       .selectFrom('posts')
@@ -86,21 +86,21 @@ export class PostRepository {
       ])
       .orderBy('posts.createdAt', 'desc')
       .execute();
-        
+
     return posts as PostWithAuthor[];
   }
 
   /**
-     * Create a new post
-     */
+   * Create a new post
+   */
   async create(postData: {
-        id: string;
-        title: string;
-        content: string;
-        authorId: string;
-        createdAt: Date;
-        updatedAt: Date;
-    }) {
+    id: string;
+    title: string;
+    content: string;
+    authorId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }) {
     const post = await db
       .insertInto('posts')
       .values({
@@ -113,28 +113,24 @@ export class PostRepository {
       })
       .returningAll()
       .executeTakeFirstOrThrow();
-        
+
     return post;
   }
 
   /**
-     * Update a post
-     */
-  async update(id: string, updates: { title?: string; content?: string; updatedAt: Date }) {
-    await db
-      .updateTable('posts')
-      .set(updates)
-      .where('id', '=', id)
-      .execute();
+   * Update a post
+   */
+  async update(
+    id: string,
+    updates: { title?: string; content?: string; updatedAt: Date }
+  ) {
+    await db.updateTable('posts').set(updates).where('id', '=', id).execute();
   }
 
   /**
-     * Delete a post
-     */
+   * Delete a post
+   */
   async delete(id: string): Promise<void> {
-    await db
-      .deleteFrom('posts')
-      .where('id', '=', id)
-      .execute();
+    await db.deleteFrom('posts').where('id', '=', id).execute();
   }
 }

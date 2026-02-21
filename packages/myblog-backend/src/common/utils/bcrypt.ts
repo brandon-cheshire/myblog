@@ -13,7 +13,7 @@ export function hashData(rawData: string): string {
  */
 export function compareHashedData(
   rawData: string,
-  hash: string | null | undefined,
+  hash: string | null | undefined
 ): boolean {
   if (!rawData || !hash) {
     return false;

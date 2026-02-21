@@ -3,8 +3,8 @@ import type { FormEvent } from 'react';
 import { api, tsrClient } from '../../api/tsrClient';
 
 interface TwoFactorSetupProps {
-  onComplete: () => void
-  onCancel: () => void
+  onComplete: () => void;
+  onCancel: () => void;
 }
 
 export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
@@ -45,7 +45,9 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
         body: { twoFactorAuthenticationCode: code },
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid verification code');
+      setError(
+        err instanceof Error ? err.message : 'Invalid verification code'
+      );
     } finally {
       setLoading(false);
     }
@@ -66,9 +68,7 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
           {loading && <p>Loading QR code...</p>}
 
           {error && (
-            <p style={{ color: 'red', marginBottom: '10px' }}>
-              {error}
-            </p>
+            <p style={{ color: 'red', marginBottom: '10px' }}>{error}</p>
           )}
 
           {qrCodeUrl && (
@@ -82,7 +82,8 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
           )}
 
           <p style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
-            After scanning, enter the 6-digit code from your app to complete setup.
+            After scanning, enter the 6-digit code from your app to complete
+            setup.
           </p>
 
           <div style={{ display: 'flex', gap: '10px' }}>
@@ -125,17 +126,28 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
 
       {step === 'verify' && (
         <div>
-          <p>Enter the 6-digit code from your authenticator app to complete setup:</p>
+          <p>
+            Enter the 6-digit code from your authenticator app to complete
+            setup:
+          </p>
 
           <form onSubmit={handleVerify}>
             <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '5px',
+                  fontWeight: 'bold',
+                }}
+              >
                 Verification Code:
               </label>
               <input
                 type="text"
                 value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                onChange={(e) =>
+                  setCode(e.target.value.replace(/\D/g, '').slice(0, 6))
+                }
                 placeholder="000000"
                 required
                 style={{
@@ -152,7 +164,9 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
             </div>
 
             {error && (
-              <p style={{ color: 'red', marginBottom: '10px', fontSize: '14px' }}>
+              <p
+                style={{ color: 'red', marginBottom: '10px', fontSize: '14px' }}
+              >
                 {error}
               </p>
             )}
@@ -160,7 +174,11 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
             <div style={{ display: 'flex', gap: '10px' }}>
               <button
                 type="submit"
-                disabled={loading || code.length !== 6 || turnOnTwoFactorMutation.isPending}
+                disabled={
+                  loading ||
+                  code.length !== 6 ||
+                  turnOnTwoFactorMutation.isPending
+                }
                 style={{
                   flex: 1,
                   padding: '10px',
@@ -168,13 +186,16 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: loading || code.length !== 6 ? 'not-allowed' : 'pointer',
+                  cursor:
+                    loading || code.length !== 6 ? 'not-allowed' : 'pointer',
                   fontSize: '16px',
                   fontWeight: 'bold',
                   opacity: loading || code.length !== 6 ? 0.6 : 1,
                 }}
               >
-                {(loading || turnOnTwoFactorMutation.isPending) ? 'Enabling...' : 'Enable 2FA'}
+                {loading || turnOnTwoFactorMutation.isPending
+                  ? 'Enabling...'
+                  : 'Enable 2FA'}
               </button>
 
               <button
@@ -202,4 +223,3 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
     </div>
   );
 }
-

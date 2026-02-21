@@ -4,16 +4,18 @@ import { AppLogger } from '../common/utils/app-logger/app-logger';
 const logger = new AppLogger('MinIO');
 
 declare global {
-    var minioClient: Minio.Client | undefined;
+  var minioClient: Minio.Client | undefined;
 }
 
-const minioClient = globalThis.minioClient || new Minio.Client({
-  endPoint: process.env.MINIO_ENDPOINT || 'localhost',
-  port: parseInt(process.env.MINIO_PORT || '9000'),
-  useSSL: process.env.MINIO_USE_SSL === 'true',
-  accessKey: process.env.MINIO_ACCESS_KEY || 'minioadmin',
-  secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
-});
+const minioClient =
+  globalThis.minioClient ||
+  new Minio.Client({
+    endPoint: process.env.MINIO_ENDPOINT || 'localhost',
+    port: parseInt(process.env.MINIO_PORT || '9000'),
+    useSSL: process.env.MINIO_USE_SSL === 'true',
+    accessKey: process.env.MINIO_ACCESS_KEY || 'minioadmin',
+    secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
+  });
 
 if (process.env.NODE_ENV !== 'production') {
   globalThis.minioClient = minioClient;
@@ -30,7 +32,10 @@ export async function ensureBucketExists(bucketName: string): Promise<void> {
       logger.info(`Created MinIO bucket: ${bucketName}`);
     }
   } catch (error) {
-    logger.error({ message: 'Error ensuring bucket exists', error }, { bucketName });
+    logger.error(
+      { message: 'Error ensuring bucket exists', error },
+      { bucketName }
+    );
     throw error;
   }
 }

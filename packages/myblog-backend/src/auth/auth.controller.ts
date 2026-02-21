@@ -19,12 +19,19 @@ export const authRouter = s.router(authContract, {
           password: ctx.body.password,
           address: ctx.body.address,
         },
-        ctx.res,
+        ctx.res
       );
-      const body = { ...userResponse, profilePicture: userResponse.profilePicture ?? undefined, address: userResponse.address ?? undefined };
+      const body = {
+        ...userResponse,
+        profilePicture: userResponse.profilePicture ?? undefined,
+        address: userResponse.address ?? undefined,
+      };
       return { status: 200 as const, body };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'register' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'register',
+      }) as never;
     }
   },
 
@@ -33,12 +40,20 @@ export const authRouter = s.router(authContract, {
       const userResponse = await authService.login(
         ctx.body.email,
         ctx.body.password,
-        ctx.res,
+        ctx.res
       );
-      const body = { ...userResponse, profilePicture: (userResponse as { profilePicture?: string | null }).profilePicture ?? undefined };
+      const body = {
+        ...userResponse,
+        profilePicture:
+          (userResponse as { profilePicture?: string | null }).profilePicture ??
+          undefined,
+      };
       return { status: 200 as const, body };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'login' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'login',
+      }) as never;
     }
   },
 
@@ -48,11 +63,17 @@ export const authRouter = s.router(authContract, {
       await authService.changePassword(
         user.id,
         ctx.body.currentPassword,
-        ctx.body.newPassword,
+        ctx.body.newPassword
       );
-      return { status: 200 as const, body: { message: 'Password changed successfully' } };
+      return {
+        status: 200 as const,
+        body: { message: 'Password changed successfully' },
+      };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'changePassword' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'changePassword',
+      }) as never;
     }
   },
 
@@ -61,7 +82,10 @@ export const authRouter = s.router(authContract, {
       const result = await authService.requestPasswordReset(ctx.body.email);
       return { status: 200 as const, body: result };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'resetPassword' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'resetPassword',
+      }) as never;
     }
   },
 
@@ -70,11 +94,17 @@ export const authRouter = s.router(authContract, {
       await authService.confirmPasswordReset(
         ctx.body.userId,
         ctx.body.verificationCode,
-        ctx.body.password,
+        ctx.body.password
       );
-      return { status: 200 as const, body: { message: 'Password reset successfully' } };
+      return {
+        status: 200 as const,
+        body: { message: 'Password reset successfully' },
+      };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'resetPasswordConfirm' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'resetPasswordConfirm',
+      }) as never;
     }
   },
 
@@ -91,7 +121,10 @@ export const authRouter = s.router(authContract, {
       sameSite: 'lax',
       path: '/',
     });
-    return { status: 200 as const, body: { message: 'Logged out successfully' } };
+    return {
+      status: 200 as const,
+      body: { message: 'Logged out successfully' },
+    };
   },
 
   getCurrentUser: async (ctx) => {
@@ -111,7 +144,10 @@ export const authRouter = s.router(authContract, {
         },
       };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'getCurrentUser' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'getCurrentUser',
+      }) as never;
     }
   },
 
@@ -128,11 +164,14 @@ export const authRouter = s.router(authContract, {
       await authService.enableTwoFactor(
         user.id,
         ctx.body.twoFactorAuthenticationCode,
-        user,
+        user
       );
       return { status: 200 as const, body: {} };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'turnOnTwoFactor' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'turnOnTwoFactor',
+      }) as never;
     }
   },
 
@@ -142,7 +181,10 @@ export const authRouter = s.router(authContract, {
       await authService.disableTwoFactor(user.id);
       return { status: 200 as const, body: {} };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'turnOffTwoFactor' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'turnOffTwoFactor',
+      }) as never;
     }
   },
 
@@ -152,12 +194,19 @@ export const authRouter = s.router(authContract, {
       const userResponse = await authService.authenticateTwoFactor(
         user,
         ctx.body.twoFactorAuthenticationCode,
-        ctx.res,
+        ctx.res
       );
-      const body = { ...userResponse, profilePicture: userResponse.profilePicture ?? undefined, address: userResponse.address ?? undefined };
+      const body = {
+        ...userResponse,
+        profilePicture: userResponse.profilePicture ?? undefined,
+        address: userResponse.address ?? undefined,
+      };
       return { status: 200 as const, body };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'authenticateTwoFactor' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'authenticateTwoFactor',
+      }) as never;
     }
   },
 });

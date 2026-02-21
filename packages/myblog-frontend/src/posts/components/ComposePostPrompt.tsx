@@ -18,7 +18,7 @@ export function ComposePostPrompt() {
   const handleCloseOverlay = (force?: boolean) => {
     if (!force && hasUnsavedChanges) {
       const confirmed = window.confirm(
-        'You have unsaved changes. Are you sure you want to close? Your changes will be lost.',
+        'You have unsaved changes. Are you sure you want to close? Your changes will be lost.'
       );
       if (!confirmed) {
         return;
@@ -61,7 +61,8 @@ export function ComposePostPrompt() {
                 target.style.display = 'none';
                 const parent = target.parentElement;
                 if (parent) {
-                  parent.innerHTML = '<div class="profile-placeholder">👤</div>';
+                  parent.innerHTML =
+                    '<div class="profile-placeholder">👤</div>';
                 }
               }}
             />
@@ -91,7 +92,7 @@ export function ComposePostPrompt() {
               </button>
             </div>
             <div className="compose-overlay-body">
-              <ComposePost 
+              <ComposePost
                 onClose={handlePostSaved}
                 onHasUnsavedChanges={handleUnsavedChangesChange}
               />

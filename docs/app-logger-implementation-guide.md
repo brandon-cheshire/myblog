@@ -36,7 +36,14 @@ Use a string union for log levels so config and runtime can stay type-safe. You 
 
 ```ts
 // e.g. shared/constants or backend src
-export const LOG_LEVELS = ['fatal', 'error', 'warn', 'info', 'debug', 'verbose'] as const;
+export const LOG_LEVELS = [
+  'fatal',
+  'error',
+  'warn',
+  'info',
+  'debug',
+  'verbose',
+] as const;
 export type LogLevel = (typeof LOG_LEVELS)[number];
 ```
 
@@ -72,7 +79,11 @@ import { ErrorMessageType } from './app-logger/error-message.type';
 export function serializeError(details: unknown): string {
   if (details == null) return 'Unknown Error';
   if (details instanceof Error) return details.message;
-  if (typeof details === 'object' && 'message' in details && typeof (details as { message: unknown }).message === 'string')
+  if (
+    typeof details === 'object' &&
+    'message' in details &&
+    typeof (details as { message: unknown }).message === 'string'
+  )
     return (details as { message: string }).message;
   if (typeof details === 'object') return JSON.stringify(details);
   return String(details);
@@ -80,7 +91,7 @@ export function serializeError(details: unknown): string {
 
 export function parseErrorDetails(
   details: ErrorMessageType,
-  messagePrefix: string,
+  messagePrefix: string
 ): { message: string; error: Error | undefined } {
   let message = '';
   let error: Error | undefined;
@@ -97,7 +108,11 @@ export function parseErrorDetails(
       message = serializeError(details.error);
     }
   }
-  if ('message' in details && typeof details.message === 'string' && details.message) {
+  if (
+    'message' in details &&
+    typeof details.message === 'string' &&
+    details.message
+  ) {
     message = message ? details.message + ' - ' + message : details.message;
   }
   if (!message) message = 'Unknown Error';
@@ -228,7 +243,7 @@ const logger = new AppLogger('RegisterLoggingConfig');
 
 export async function registerLoggingConfig(
   loggingConfig: LoggingConfig,
-  options: { environmentName?: string },
+  options: { environmentName?: string }
 ): Promise<ContextLoggerFactoryOptions> {
   const isLocal = options.environmentName === 'local';
 
@@ -245,7 +260,8 @@ export async function registerLoggingConfig(
     autoLogging: loggingConfig.autoLogging,
     genReqId: (request, response): string => {
       const existingId =
-        (ContextLogger.getContext()['correlationId'] as string) ?? crypto.randomUUID();
+        (ContextLogger.getContext()['correlationId'] as string) ??
+        crypto.randomUUID();
       (request as { id?: string }).id = existingId;
       response.setHeader('x-correlation-id', existingId);
       return existingId;
@@ -310,10 +326,9 @@ import { AppConfigService } from './appconfig/appconfig.service'; // or wherever
       imports: [AppConfigModule], // or whatever provides logging config
       inject: [AppConfigService],
       useFactory: (appConfigService: AppConfigService) =>
-        registerLoggingConfig(
-          appConfigService.getLoggingConfig(),
-          { environmentName: appConfigService.getEnvironmentName() },
-        ),
+        registerLoggingConfig(appConfigService.getLoggingConfig(), {
+          environmentName: appConfigService.getEnvironmentName(),
+        }),
     }),
     // ... other modules
   ],
@@ -367,7 +382,7 @@ try {
 } catch (error) {
   this.logger.error(
     { message: 'Operation failed', error },
-    { userId, transactionId },
+    { userId, transactionId }
   );
   throw error;
 }
@@ -398,7 +413,12 @@ To log every unhandled exception with AppLogger (and optionally set response sta
 ```ts
 // src/core/filters/exception.filter.ts
 
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { AppLogger } from 'src/common/utils/app-logger/app-logger';
 
@@ -448,14 +468,14 @@ src/
 
 **What to export and where to import from:**
 
-| Consumer | Import |
-|----------|--------|
-| Services, controllers, filters | `import { AppLogger } from './common/utils/app-logger/app-logger';` |
-| Config / env → LoggingConfig | Build an object matching `LoggingConfig` (from `logging-config.type.ts` or your config module). |
-| AppModule | `import { registerLoggingConfig } from './common/utils/app-logger/log-registration';` |
-| log-registration.ts | `import { AppLogger } from './app-logger';` and `import type { LoggingConfig } from './logging-config.type';` |
-| serializeError.ts | `import { ErrorMessageType } from './app-logger/error-message.type';` |
-| app-logger.ts | `import { parseErrorDetails } from '../serializeError';` and `import { ErrorMessageType } from './error-message.type';` |
+| Consumer                       | Import                                                                                                                  |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Services, controllers, filters | `import { AppLogger } from './common/utils/app-logger/app-logger';`                                                     |
+| Config / env → LoggingConfig   | Build an object matching `LoggingConfig` (from `logging-config.type.ts` or your config module).                         |
+| AppModule                      | `import { registerLoggingConfig } from './common/utils/app-logger/log-registration';`                                   |
+| log-registration.ts            | `import { AppLogger } from './app-logger';` and `import type { LoggingConfig } from './logging-config.type';`           |
+| serializeError.ts              | `import { ErrorMessageType } from './app-logger/error-message.type';`                                                   |
+| app-logger.ts                  | `import { parseErrorDetails } from '../serializeError';` and `import { ErrorMessageType } from './error-message.type';` |
 
 Do not use barrel files (e.g. `index.ts`) in app-logger; import directly from the files above. Config and environment names can live in your existing config module; only the logging section needs to match the shape expected by `registerLoggingConfig`.
 
@@ -467,12 +487,12 @@ The same **AppLogger API**, **types** (`ErrorMessageType`, `LoggingConfig`), and
 
 **Use instead of NestJS pieces:**
 
-| NestJS | Without NestJS |
-|--------|----------------|
-| `ContextLogger` | **pino** (root logger) and a **child logger** per class: `rootLogger.child({ context: className })`. |
-| Request-scoped context (correlation ID) | **AsyncLocalStorage** (from `async_hooks`): in middleware, generate or read `req.id`, then `requestContext.run({ correlationId: req.id }, () => next())`. Run **pino-http** first so `req.id` is set; then a small middleware that runs the rest of the chain inside `requestContext.run(...)`. |
-| `ContextLoggerModule.forRootAsync` | At bootstrap: build `LoggingConfig` from env, create **pino** with that config (level, redact, and in dev a **pino-pretty** transport). Use **pino-http** as Express/Fastify middleware with the same options (redact, `genReqId`). No DI—pass the root pino into your app or set it on a module that **AppLogger** reads. |
-| Nest exception filter | Express: `app.use((err, req, res, next) => { ... })`. Fastify: `setErrorHandler`. In the handler, log with **AppLogger** via `logger.error({ error: err })` then send status/body. |
+| NestJS                                  | Without NestJS                                                                                                                                                                                                                                                                                                             |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ContextLogger`                         | **pino** (root logger) and a **child logger** per class: `rootLogger.child({ context: className })`.                                                                                                                                                                                                                       |
+| Request-scoped context (correlation ID) | **AsyncLocalStorage** (from `async_hooks`): in middleware, generate or read `req.id`, then `requestContext.run({ correlationId: req.id }, () => next())`. Run **pino-http** first so `req.id` is set; then a small middleware that runs the rest of the chain inside `requestContext.run(...)`.                            |
+| `ContextLoggerModule.forRootAsync`      | At bootstrap: build `LoggingConfig` from env, create **pino** with that config (level, redact, and in dev a **pino-pretty** transport). Use **pino-http** as Express/Fastify middleware with the same options (redact, `genReqId`). No DI—pass the root pino into your app or set it on a module that **AppLogger** reads. |
+| Nest exception filter                   | Express: `app.use((err, req, res, next) => { ... })`. Fastify: `setErrorHandler`. In the handler, log with **AppLogger** via `logger.error({ error: err })` then send status/body.                                                                                                                                         |
 
 **AppLogger implementation (non-NestJS):** The class holds a **pino** child logger (created from the shared root). On each log call, merge the current **AsyncLocalStorage** store (e.g. `correlationId`) into the payload so every log line gets request context. Keep the same method signatures: `debug`/`info`/`warn`/`verbose(message, data?)` and `error`/`fatal(details: ErrorMessageType, data?)` using `parseErrorDetails`. No `nestjs-context-logger` dependency.
 
@@ -482,12 +502,12 @@ The same **AppLogger API**, **types** (`ErrorMessageType`, `LoggingConfig`), and
 
 ## 10. Summary
 
-| Piece | Role |
-|-------|------|
-| **nestjs-context-logger** | Provides `ContextLogger` and request-scoped context (e.g. correlation ID); integrates with pino. |
-| **ContextLoggerModule.forRootAsync** | Supplies pino-http options and context enrichment at bootstrap. |
-| **AppLogger** | Thin wrapper: same API everywhere, context string per class, structured `error`/`fatal` via `ErrorMessageType`. |
-| **parseErrorDetails** | Normalizes `ErrorMessageType` to one message string and optional `Error` for the underlying logger. |
-| **registerLoggingConfig** | Builds `ContextLoggerFactoryOptions` (level, redact, transport, genReqId, enrichContext) from your config. |
+| Piece                                | Role                                                                                                            |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| **nestjs-context-logger**            | Provides `ContextLogger` and request-scoped context (e.g. correlation ID); integrates with pino.                |
+| **ContextLoggerModule.forRootAsync** | Supplies pino-http options and context enrichment at bootstrap.                                                 |
+| **AppLogger**                        | Thin wrapper: same API everywhere, context string per class, structured `error`/`fatal` via `ErrorMessageType`. |
+| **parseErrorDetails**                | Normalizes `ErrorMessageType` to one message string and optional `Error` for the underlying logger.             |
+| **registerLoggingConfig**            | Builds `ContextLoggerFactoryOptions` (level, redact, transport, genReqId, enrichContext) from your config.      |
 
 With this, you can replicate the same logger behavior and conventions in another NestJS project without copying project-specific pieces (e.g. feature flags or user types). Omit or simplify the runtime log-level and enrichContext logic if you do not need them.

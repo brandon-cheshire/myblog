@@ -16,39 +16,39 @@ Organize the frontend by **domains**: each top-level folder under `src` is a dom
 packages/myblog-frontend/src
 ├── api
 ├── auth
-│   ├── components
-│   │   ├── LoginForm.tsx
-│   │   ├── RegisterForm.tsx
-│   │   ├── TwoFactorAuthForm.tsx
-│   │   └── TwoFactorSetup.tsx
-│   ├── context
-│   │   └── AuthContext.tsx
-│   └── pages
-│       └── AuthSection.tsx
+│ ├── components
+│ │ ├── LoginForm.tsx
+│ │ ├── RegisterForm.tsx
+│ │ ├── TwoFactorAuthForm.tsx
+│ │ └── TwoFactorSetup.tsx
+│ ├── context
+│ │ └── AuthContext.tsx
+│ └── pages
+│ └── AuthSection.tsx
 ├── common
-│   ├── components
-│   │   ├── Banner.tsx
-│   │   ├── MainLayout.tsx
-│   │   └── ScrollToTop.tsx
-│   └── context
-│       └── ThemeContext.tsx
+│ ├── components
+│ │ ├── Banner.tsx
+│ │ ├── MainLayout.tsx
+│ │ └── ScrollToTop.tsx
+│ └── context
+│ └── ThemeContext.tsx
 ├── posts
-│   ├── components
-│   │   ├── ComposePost.tsx
-│   │   ├── ComposePostPrompt.tsx
-│   │   ├── MyPosts.tsx
-│   │   └── PostItem.tsx
-│   ├── context
-│   │   └── PostsContext.tsx
-│   ├── hooks
-│   │   ├── usePostOperations.ts
-│   │   └── usePosts.ts
-│   └── pages
-│       └── PostList.tsx
+│ ├── components
+│ │ ├── ComposePost.tsx
+│ │ ├── ComposePostPrompt.tsx
+│ │ ├── MyPosts.tsx
+│ │ └── PostItem.tsx
+│ ├── context
+│ │ └── PostsContext.tsx
+│ ├── hooks
+│ │ ├── usePostOperations.ts
+│ │ └── usePosts.ts
+│ └── pages
+│ └── PostList.tsx
 └── users
-    └── pages
-        ├── Profile.tsx
-        └── Settings.tsx
+└── pages
+├── Profile.tsx
+└── Settings.tsx
 ```
 
 ## Naming
@@ -72,11 +72,11 @@ Use prefixes to make intent clear.
 - For booleans, use prefixes: `is`, `has`, `should`.
 
 ```typescript
-const [isOverlayOpen, setIsOverlayOpen] = useState(false)
-const [loading, setLoading] = useState(false)
-const [error, setError] = useState<string | null>(null)
+const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
 
-const { user, loading } = useAuth()
+const { user, loading } = useAuth();
 ```
 
 **Event handlers**

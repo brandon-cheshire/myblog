@@ -11,7 +11,8 @@ import { initLogging } from './common/utils/app-logger/init-logging';
 import { AppLogger } from './common/utils/app-logger/app-logger';
 
 const isLocal = process.env.NODE_ENV !== 'production';
-const { pinoHttpMiddleware, requestContextMiddleware, requestLogMiddleware } = initLogging({ isLocal });
+const { pinoHttpMiddleware, requestContextMiddleware, requestLogMiddleware } =
+  initLogging({ isLocal });
 
 class App {
   public app: express.Application;
@@ -42,40 +43,56 @@ class App {
     // In development, allow any origin so login/fetch work regardless of port. (Auth is Bearer, no cookies.)
     const isDev = process.env.NODE_ENV !== 'production';
     const allowedOrigin = process.env.FRONTEND_URL;
-    this.app.use(cors({
-      origin: allowedOrigin
-        ? allowedOrigin
-        : isDev
-          ? true
-          : (origin: string | undefined, cb: (err: null, allow: boolean | string) => void) => {
-            const allow = !origin || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-            cb(null, allow ? (origin || true) : false);
-          },
-      credentials: isDev ? false : true,
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      optionsSuccessStatus: 200,
-    }));
+    this.app.use(
+      cors({
+        origin: allowedOrigin
+          ? allowedOrigin
+          : isDev
+            ? true
+            : (
+                origin: string | undefined,
+                cb: (err: null, allow: boolean | string) => void
+              ) => {
+                const allow =
+                  !origin ||
+                  /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+                cb(null, allow ? origin || true : false);
+              },
+        credentials: isDev ? false : true,
+        allowedHeaders: ['Content-Type', 'Authorization'],
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        optionsSuccessStatus: 200,
+      })
+    );
     this.app.use(express.json());
     this.app.use(cookieParser());
 
     // Proxy uploads to MinIO instead of serving local files
     this.app.get('/uploads/profile-pictures/:filename', async (req, res) => {
       try {
-        const { minioClient, PROFILE_PICTURES_BUCKET } = await import('./utils/minio');
+        const { minioClient, PROFILE_PICTURES_BUCKET } =
+          await import('./utils/minio');
         const filename = req.params.filename;
 
         // Get object info first to check if it exists and get content type
-        const stat = await minioClient.statObject(PROFILE_PICTURES_BUCKET, filename);
+        const stat = await minioClient.statObject(
+          PROFILE_PICTURES_BUCKET,
+          filename
+        );
 
         // Set content type
-        res.setHeader('Content-Type', stat.metaData['content-type'] || 'application/octet-stream');
+        res.setHeader(
+          'Content-Type',
+          stat.metaData['content-type'] || 'application/octet-stream'
+        );
         res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
 
         // Stream the object from MinIO to the response
-        const stream = await minioClient.getObject(PROFILE_PICTURES_BUCKET, filename);
+        const stream = await minioClient.getObject(
+          PROFILE_PICTURES_BUCKET,
+          filename
+        );
         stream.pipe(res);
-
       } catch (error) {
         this.logger.error({ message: 'Error serving file from MinIO', error });
         res.status(404).send('File not found');

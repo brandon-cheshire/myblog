@@ -11,7 +11,9 @@ export function Profile() {
 
   const byUsernameQuery = tsrClient.users.getUserByUsername.useQuery({
     queryKey: ['user-by-username', identifier ?? ''],
-    queryData: identifier ? { params: { username: identifier } } : ({} as { params: { username: string } }),
+    queryData: identifier
+      ? { params: { username: identifier } }
+      : ({} as { params: { username: string } }),
     enabled: !!identifier,
     staleTime: 30_000,
   });
@@ -21,7 +23,9 @@ export function Profile() {
     : currentUser;
 
   const loading = !!identifier && byUsernameQuery.isLoading;
-  const error = byUsernameQuery.error ? (byUsernameQuery.error as Error).message : null;
+  const error = byUsernameQuery.error
+    ? (byUsernameQuery.error as Error).message
+    : null;
 
   if (loading) {
     return <div className="loading">Loading profile...</div>;
@@ -46,7 +50,8 @@ export function Profile() {
                 target.style.display = 'none';
                 const parent = target.parentElement;
                 if (parent) {
-                  parent.innerHTML = '<div class="profile-placeholder-large">👤</div>';
+                  parent.innerHTML =
+                    '<div class="profile-placeholder-large">👤</div>';
                 }
               }}
             />

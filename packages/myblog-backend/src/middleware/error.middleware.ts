@@ -8,7 +8,7 @@ function errorMiddleware(
   error: HttpException | Error,
   _request: Request,
   response: Response,
-  _next: NextFunction,
+  _next: NextFunction
 ) {
   if (response.headersSent) {
     return;

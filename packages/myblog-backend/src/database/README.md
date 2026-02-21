@@ -20,13 +20,13 @@ database/
 
 Migration files are SQL scripts that modify the database schema. They are run in sorted order (by filename). Naming convention: three-digit number + short description:
 
-| File | Description |
-|------|-------------|
-| `000_init.sql` | Base schema: `User`, `addresses`, `posts` tables |
-| `001_add_user_status_and_verification.sql` | User status, verification code and expiry columns |
-| `002_migrate_old_password_fields.sql` | Add `password_hash`, migrate from old `password` column |
-| `003_make_updated_at_nullable.sql` | Make `User.updatedAt` nullable |
-| `004_add_username.sql` | Add unique nullable `username` to `User` |
+| File                                       | Description                                             |
+| ------------------------------------------ | ------------------------------------------------------- |
+| `000_init.sql`                             | Base schema: `User`, `addresses`, `posts` tables        |
+| `001_add_user_status_and_verification.sql` | User status, verification code and expiry columns       |
+| `002_migrate_old_password_fields.sql`      | Add `password_hash`, migrate from old `password` column |
+| `003_make_updated_at_nullable.sql`         | Make `User.updatedAt` nullable                          |
+| `004_add_username.sql`                     | Add unique nullable `username` to `User`                |
 
 Next migration should be named `005_descriptive_name.sql`.
 
@@ -35,11 +35,13 @@ Next migration should be named `005_descriptive_name.sql`.
 From the backend package root (`packages/myblog-backend`):
 
 ### Run all pending migrations
+
 ```bash
 npm run migrate
 ```
 
 ### Or run the script directly
+
 ```bash
 npx tsx src/database/migrate.ts
 ```

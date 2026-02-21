@@ -33,5 +33,5 @@ createRoot(document.getElementById('root')!).render(
         </Router>
       </tsrClient.ReactQueryProvider>
     </QueryClientProvider>
-  </StrictMode>,
+  </StrictMode>
 );

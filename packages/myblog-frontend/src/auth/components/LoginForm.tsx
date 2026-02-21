@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 interface LoginFormProps {
-  onSwitchToRegister: () => void
+  onSwitchToRegister: () => void;
 }
 
 export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
@@ -16,7 +16,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
       await login(email, password);
       setEmail('');
@@ -33,7 +33,13 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '5px',
+              fontWeight: 'bold',
+            }}
+          >
             Email:
           </label>
           <input
@@ -51,7 +57,13 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           />
         </div>
         <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '5px',
+              fontWeight: 'bold',
+            }}
+          >
             Password:
           </label>
           <input
@@ -110,4 +122,3 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     </div>
   );
 }
-

@@ -7,7 +7,8 @@ import { useAuth } from '../context/AuthContext';
 
 export function AuthSection() {
   const [mode, setMode] = useState<'login' | 'register' | 'setup2fa'>('login');
-  const { requiresTwoFactor, setRequiresTwoFactor, setTempCredentials } = useAuth();
+  const { requiresTwoFactor, setRequiresTwoFactor, setTempCredentials } =
+    useAuth();
 
   const handleSwitchToRegister = () => {
     setMode('register');
@@ -43,16 +44,16 @@ export function AuthSection() {
       {mode === 'login' && (
         <LoginForm onSwitchToRegister={handleSwitchToRegister} />
       )}
-      
+
       {mode === 'register' && (
-        <RegisterForm 
+        <RegisterForm
           onSwitchToLogin={handleSwitchToLogin}
           onSetupTwoFactor={handleSetupTwoFactor}
         />
       )}
-      
+
       {mode === 'setup2fa' && (
-        <TwoFactorSetup 
+        <TwoFactorSetup
           onComplete={handleSetupComplete}
           onCancel={() => setMode('register')}
         />

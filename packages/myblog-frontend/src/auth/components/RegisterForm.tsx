@@ -3,11 +3,14 @@ import type { FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 interface RegisterFormProps {
-  onSwitchToLogin: () => void
-  onSetupTwoFactor: () => void
+  onSwitchToLogin: () => void;
+  onSetupTwoFactor: () => void;
 }
 
-export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterFormProps) {
+export function RegisterForm({
+  onSwitchToLogin,
+  onSetupTwoFactor,
+}: RegisterFormProps) {
   const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -19,7 +22,7 @@ export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterForm
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
       await register(name, email, password);
       setName('');
@@ -39,7 +42,13 @@ export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterForm
       <h2>Register</h2>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '5px',
+              fontWeight: 'bold',
+            }}
+          >
             Name:
           </label>
           <input
@@ -57,7 +66,13 @@ export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterForm
           />
         </div>
         <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '5px',
+              fontWeight: 'bold',
+            }}
+          >
             Email:
           </label>
           <input
@@ -75,7 +90,13 @@ export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterForm
           />
         </div>
         <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '5px',
+              fontWeight: 'bold',
+            }}
+          >
             Password:
           </label>
           <input
@@ -116,7 +137,7 @@ export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterForm
           {loading ? 'Loading...' : 'Register'}
         </button>
       </form>
-      
+
       <p style={{ marginTop: '15px', textAlign: 'center', fontSize: '14px' }}>
         Already have an account?{' '}
         <button
@@ -135,4 +156,3 @@ export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterForm
     </div>
   );
 }
-

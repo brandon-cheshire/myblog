@@ -15,7 +15,10 @@ export const postRouter = s.router(postContract, {
       const posts = await postService.getAllPosts();
       return { status: 200 as const, body: posts };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'getPosts' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'getPosts',
+      }) as never;
     }
   },
 
@@ -24,7 +27,10 @@ export const postRouter = s.router(postContract, {
       const post = await postService.getPostById(ctx.params.id);
       return { status: 200 as const, body: post };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'getPost' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'getPost',
+      }) as never;
     }
   },
 
@@ -55,7 +61,10 @@ export const postRouter = s.router(postContract, {
       });
       return { status: 200 as const, body: post };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'updatePost' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'updatePost',
+      }) as never;
     }
   },
 
@@ -65,8 +74,10 @@ export const postRouter = s.router(postContract, {
       await postService.deletePost(ctx.params.id, user.id);
       return { status: 200 as const, body: {} };
     } catch (error) {
-      return handleControllerError(error, { logger, context: 'deletePost' }) as never;
+      return handleControllerError(error, {
+        logger,
+        context: 'deletePost',
+      }) as never;
     }
   },
 });
-

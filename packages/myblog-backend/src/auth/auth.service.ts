@@ -5,7 +5,11 @@ import type { CookieOptions, Response } from 'express';
 import { UserRepository } from '../user/user.repository';
 import { UserService } from '../user/user.service';
 import { hashData, compareHashedData } from '../common/utils/bcrypt';
-import { generateVerificationCode, generateVerificationCodeExpiry, isVerificationCodeExpired } from '../common/utils/verification.utils';
+import {
+  generateVerificationCode,
+  generateVerificationCodeExpiry,
+  isVerificationCodeExpired,
+} from '../common/utils/verification.utils';
 import {
   WrongCredentialsException,
   PasswordResetRequiredException,
@@ -17,13 +21,13 @@ import type { UserWithPasswordHash } from '../user/user.types';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 
 export interface TokenData {
-    token: string;
-    expiresIn: number;
+  token: string;
+  expiresIn: number;
 }
 
 export interface DataStoredInToken {
-    _id: string;
-    isSecondFactorAuthenticated: boolean;
+  _id: string;
+  isSecondFactorAuthenticated: boolean;
 }
 
 /**
@@ -36,8 +40,8 @@ export class AuthService {
   private userService = new UserService();
 
   /**
-     * Authenticates a user with password validation and status checks
-     */
+   * Authenticates a user with password validation and status checks
+   */
   private authenticateUser(user: UserWithPasswordHash, password: string): User {
     if (user.status === 'password_reset_required') {
       throw new PasswordResetRequiredException();
@@ -52,14 +56,21 @@ export class AuthService {
       throw new WrongCredentialsException();
     }
 
-    const { password_hash: _, passwordHash: __, ...result } = user as UserWithPasswordHash & { password_hash: string };
+    const {
+      password_hash: _,
+      passwordHash: __,
+      ...result
+    } = user as UserWithPasswordHash & { password_hash: string };
     return result as unknown as User;
   }
 
   /**
-     * Create a JWT token for a user
-     */
-  private createToken(user: User, isSecondFactorAuthenticated = false): TokenData {
+   * Create a JWT token for a user
+   */
+  private createToken(
+    user: User,
+    isSecondFactorAuthenticated = false
+  ): TokenData {
     const expiresIn = 60 * 60; // an hour
     const secret = process.env.JWT_SECRET;
     if (!secret) {
@@ -76,8 +87,8 @@ export class AuthService {
   }
 
   /**
-     * Set authentication cookie on response
-     */
+   * Set authentication cookie on response
+   */
   private setCookie(response: Response, tokenData: TokenData) {
     const cookieOptions: CookieOptions = {
       httpOnly: true,
@@ -98,8 +109,8 @@ export class AuthService {
   }
 
   /**
-     * Generate 2FA secret code
-     */
+   * Generate 2FA secret code
+   */
   private getTwoFactorAuthenticationCode() {
     const secretCode = speakeasy.generateSecret({
       name: process.env.TWO_FACTOR_AUTHENTICATION_APP_NAME,
@@ -111,9 +122,12 @@ export class AuthService {
   }
 
   /**
-     * Respond with QR code for 2FA setup
-     */
-  private async respondWithQRCode(data: string, response: Response): Promise<void> {
+   * Respond with QR code for 2FA setup
+   */
+  private async respondWithQRCode(
+    data: string,
+    response: Response
+  ): Promise<void> {
     response.setHeader('Content-Type', 'image/png');
     const buffer = await QRCode.toBuffer(data, {
       type: 'png',
@@ -123,9 +137,12 @@ export class AuthService {
   }
 
   /**
-     * Verify 2FA code
-     */
-  private verifyTwoFactorAuthenticationCode(twoFactorAuthenticationCode: string, user: User) {
+   * Verify 2FA code
+   */
+  private verifyTwoFactorAuthenticationCode(
+    twoFactorAuthenticationCode: string,
+    user: User
+  ) {
     if (!user.twoFactorAuthenticationCode) {
       throw new Error('Two-factor authentication code not set for user');
     }
@@ -137,18 +154,21 @@ export class AuthService {
   }
 
   /**
-     * Register a new user
-     */
-  async register(userData: {
-        name: string;
-        email: string;
-        password: string;
-        address?: {
-            street: string;
-            city: string;
-            country: string;
-        };
-    }, res: Response) {
+   * Register a new user
+   */
+  async register(
+    userData: {
+      name: string;
+      email: string;
+      password: string;
+      address?: {
+        street: string;
+        city: string;
+        country: string;
+      };
+    },
+    res: Response
+  ) {
     const user = await this.userService.register(userData);
 
     const tokenData = this.createToken(user);
@@ -171,8 +191,8 @@ export class AuthService {
   }
 
   /**
-     * Login a user
-     */
+   * Login a user
+   */
   async login(email: string, password: string, res: Response) {
     const user = await this.userRepository.findByEmail(email);
 
@@ -181,8 +201,13 @@ export class AuthService {
     }
 
     if (!user.password_hash) {
-      this.logger.warn('User missing password hash, requiring reset', { userId: user.id });
-      await this.userRepository.updateStatus(user.id, 'password_reset_required');
+      this.logger.warn('User missing password hash, requiring reset', {
+        userId: user.id,
+      });
+      await this.userRepository.updateStatus(
+        user.id,
+        'password_reset_required'
+      );
       throw new PasswordResetRequiredException();
     }
 
@@ -212,9 +237,13 @@ export class AuthService {
   }
 
   /**
-     * Change user password
-     */
-  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+   * Change user password
+   */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ) {
     const userWithPassword = await this.userRepository.findById(userId);
 
     if (!userWithPassword) {
@@ -232,14 +261,17 @@ export class AuthService {
   }
 
   /**
-     * Request password reset
-     */
+   * Request password reset
+   */
   async requestPasswordReset(email: string) {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       // Return success even if user doesn't exist to prevent email enumeration
-      return { message: 'If an account with this email exists, a password reset link has been sent.' };
+      return {
+        message:
+          'If an account with this email exists, a password reset link has been sent.',
+      };
     }
 
     // Generate verification code
@@ -249,18 +281,25 @@ export class AuthService {
     await this.userRepository.updateVerificationCode(
       user.id,
       verificationCode,
-      verificationCodeExpiresAt.toISOString(),
+      verificationCodeExpiresAt.toISOString()
     );
 
     this.logger.info('Password reset requested', { userId: user.id });
 
-    return { message: 'If an account with this email exists, a password reset link has been sent.' };
+    return {
+      message:
+        'If an account with this email exists, a password reset link has been sent.',
+    };
   }
 
   /**
-     * Confirm password reset
-     */
-  async confirmPasswordReset(userId: string, verificationCode: string, newPassword: string) {
+   * Confirm password reset
+   */
+  async confirmPasswordReset(
+    userId: string,
+    verificationCode: string,
+    newPassword: string
+  ) {
     const user = await this.userRepository.findById(userId);
 
     if (!user) {
@@ -268,8 +307,10 @@ export class AuthService {
     }
 
     // Check verification code
-    if (user.verificationCode !== verificationCode ||
-            isVerificationCodeExpired(user.verificationCodeExpiresAt)) {
+    if (
+      user.verificationCode !== verificationCode ||
+      isVerificationCodeExpired(user.verificationCodeExpiresAt)
+    ) {
       throw new WrongCredentialsException();
     }
 
@@ -283,8 +324,8 @@ export class AuthService {
   }
 
   /**
-     * Generate 2FA QR code
-     */
+   * Generate 2FA QR code
+   */
   async generateTwoFactor(userId: string, res: Response): Promise<void> {
     const { otpauthUrl, base32 } = this.getTwoFactorAuthenticationCode();
     await this.userService.updateTwoFactorCode({ userId, code: base32 });
@@ -293,8 +334,8 @@ export class AuthService {
   }
 
   /**
-     * Enable 2FA
-     */
+   * Enable 2FA
+   */
   async enableTwoFactor(userId: string, code: string, user: User) {
     const isCodeValid = this.verifyTwoFactorAuthenticationCode(code, user);
     if (!isCodeValid) {
@@ -305,16 +346,16 @@ export class AuthService {
   }
 
   /**
-     * Disable 2FA
-     */
+   * Disable 2FA
+   */
   async disableTwoFactor(userId: string) {
     await this.userService.disableTwoFactor(userId);
     this.logger.info('2FA disabled', { userId });
   }
 
   /**
-     * Authenticate with 2FA code
-     */
+   * Authenticate with 2FA code
+   */
   async authenticateTwoFactor(user: User, code: string, res: Response) {
     const isCodeValid = this.verifyTwoFactorAuthenticationCode(code, user);
     if (!isCodeValid) {

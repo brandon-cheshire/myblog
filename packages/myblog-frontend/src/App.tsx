@@ -6,7 +6,7 @@ import { PostList } from './posts/pages/PostList';
 import { MainLayout } from './common/components/MainLayout';
 import { Settings } from './users/pages/Settings';
 import { Profile } from './users/pages/Profile';
-import { ScrollToTop } from './common/components/ScrollToTop';      
+import { ScrollToTop } from './common/components/ScrollToTop';
 
 function App() {
   const { user, loading } = useAuth();
@@ -19,8 +19,8 @@ function App() {
     <div className="app">
       <ScrollToTop />
       <Routes>
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             user ? (
               <MainLayout>
@@ -29,10 +29,10 @@ function App() {
             ) : (
               <AuthSection />
             )
-          } 
+          }
         />
-        <Route 
-          path="/profile" 
+        <Route
+          path="/profile"
           element={
             user ? (
               <MainLayout>
@@ -41,10 +41,10 @@ function App() {
             ) : (
               <Navigate to="/" replace />
             )
-          } 
+          }
         />
-        <Route 
-          path="/settings" 
+        <Route
+          path="/settings"
           element={
             user ? (
               <MainLayout>
@@ -53,11 +53,11 @@ function App() {
             ) : (
               <Navigate to="/" replace />
             )
-          } 
+          }
         />
         {/* Profile route by username - must be last to avoid conflicts */}
-        <Route 
-          path="/:identifier" 
+        <Route
+          path="/:identifier"
           element={
             user ? (
               <MainLayout>
@@ -66,7 +66,7 @@ function App() {
             ) : (
               <Navigate to="/" replace />
             )
-          } 
+          }
         />
       </Routes>
     </div>

@@ -21,8 +21,8 @@ export class UserService {
   private addressRepository = new AddressRepository();
 
   /**
-     * Generate a base username from a name (remove spaces, lowercase, keep only valid chars)
-     */
+   * Generate a base username from a name (remove spaces, lowercase, keep only valid chars)
+   */
   private generateBaseUsername(name: string): string {
     // Remove spaces, convert to lowercase, keep only alphanumeric, dots, hyphens, underscores
     let base = name
@@ -39,10 +39,10 @@ export class UserService {
       // Try to use first letters of name, or fallback to 'user'
       const initials = name
         .split(/\s+/)
-        .map(word => word.charAt(0).toLowerCase())
-        .filter(char => /[a-z0-9]/.test(char))
+        .map((word) => word.charAt(0).toLowerCase())
+        .filter((char) => /[a-z0-9]/.test(char))
         .join('');
-            
+
       if (initials.length >= 3) {
         base = initials.substring(0, 30);
       } else {
@@ -54,8 +54,8 @@ export class UserService {
   }
 
   /**
-     * Find an available username by trying the base name, then adding incrementing numbers
-     */
+   * Find an available username by trying the base name, then adding incrementing numbers
+   */
   private async findAvailableUsername(baseUsername: string): Promise<string> {
     // Try the base username first
     const isTaken = await this.userRepository.isUsernameTaken(baseUsername);
@@ -72,7 +72,7 @@ export class UserService {
       const maxBaseLength = 30 - numberStr.length;
       candidate = baseUsername.substring(0, maxBaseLength) + numberStr;
       counter++;
-            
+
       // Safety check to prevent infinite loop
       if (counter > 10000) {
         throw new Error('Unable to generate unique username');
@@ -83,18 +83,18 @@ export class UserService {
   }
 
   /**
-     * Register a new user with optional address
-     */
+   * Register a new user with optional address
+   */
   async register(userData: {
-        name: string;
-        email: string;
-        password: string;
-        address?: {
-            street: string;
-            city: string;
-            country: string;
-        };
-    }): Promise<User> {
+    name: string;
+    email: string;
+    password: string;
+    address?: {
+      street: string;
+      city: string;
+      country: string;
+    };
+  }): Promise<User> {
     // Check if user already exists
     const existingUser = await this.userRepository.findByEmail(userData.email);
     if (existingUser) {
@@ -133,8 +133,8 @@ export class UserService {
   }
 
   /**
-     * Get user by ID with address
-     */
+   * Get user by ID with address
+   */
   async getUserById(id: string) {
     const user = await this.userRepository.findByIdWithAddress(id);
     if (!user) {
@@ -149,17 +149,19 @@ export class UserService {
       profilePicture: user.profilePicture || undefined,
       createdAt: user.createdAt?.toISOString(),
       isTwoFactorEnabled: user.isTwoFactorAuthenticationEnabled,
-      address: user.address_id ? {
-        street: user.street!,
-        city: user.city!,
-        country: user.country!,
-      } : undefined,
+      address: user.address_id
+        ? {
+            street: user.street!,
+            city: user.city!,
+            country: user.country!,
+          }
+        : undefined,
     };
   }
 
   /**
-     * Get user by username with address
-     */
+   * Get user by username with address
+   */
   async getUserByUsername(username: string) {
     const user = await this.userRepository.findByUsernameWithAddress(username);
     if (!user) {
@@ -174,17 +176,19 @@ export class UserService {
       profilePicture: user.profilePicture || undefined,
       createdAt: user.createdAt?.toISOString(),
       isTwoFactorEnabled: user.isTwoFactorAuthenticationEnabled,
-      address: user.address_id ? {
-        street: user.street!,
-        city: user.city!,
-        country: user.country!,
-      } : undefined,
+      address: user.address_id
+        ? {
+            street: user.street!,
+            city: user.city!,
+            country: user.country!,
+          }
+        : undefined,
     };
   }
 
   /**
-     * Update user's username. Returns the updated user.
-     */
+   * Update user's username. Returns the updated user.
+   */
   async updateUsername(params: { userId: string; username: string }) {
     const { userId, username } = params;
     const isTaken = await this.userRepository.isUsernameTaken(username, userId);
@@ -199,8 +203,8 @@ export class UserService {
   }
 
   /**
-     * Update user's profile picture (DB only)
-     */
+   * Update user's profile picture (DB only)
+   */
   async updateProfilePicture(params: {
     userId: string;
     filename: string;
@@ -211,8 +215,8 @@ export class UserService {
   }
 
   /**
-     * Upload profile picture: ensure bucket, store in MinIO, remove previous if any, update user.
-     */
+   * Upload profile picture: ensure bucket, store in MinIO, remove previous if any, update user.
+   */
   async uploadProfilePicture(params: {
     userId: string;
     file: Express.Multer.File;
@@ -229,7 +233,7 @@ export class UserService {
       try {
         await minioClient.removeObject(
           PROFILE_PICTURES_BUCKET,
-          user.profilePicture,
+          user.profilePicture
         );
       } catch {
         this.logger.warn('Failed to delete old profile picture from MinIO', {
@@ -243,7 +247,7 @@ export class UserService {
       filename,
       file.buffer,
       file.size,
-      { 'Content-Type': file.mimetype },
+      { 'Content-Type': file.mimetype }
     );
 
     await this.userRepository.updateProfilePicture(userId, filename);
@@ -252,24 +256,24 @@ export class UserService {
   }
 
   /**
-     * Enable 2FA for user
-     */
+   * Enable 2FA for user
+   */
   async enableTwoFactor(userId: string): Promise<void> {
     await this.userRepository.enableTwoFactor(userId);
     this.logger.info('2FA enabled for user', { userId });
   }
 
   /**
-     * Disable 2FA for user
-     */
+   * Disable 2FA for user
+   */
   async disableTwoFactor(userId: string): Promise<void> {
     await this.userRepository.disableTwoFactor(userId);
     this.logger.info('2FA disabled for user', { userId });
   }
 
   /**
-     * Update 2FA code for user
-     */
+   * Update 2FA code for user
+   */
   async updateTwoFactorCode(params: {
     userId: string;
     code: string;

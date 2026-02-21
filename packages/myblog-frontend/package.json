@@ -1,11 +1,11 @@
 {
   "name": "myblog-frontend",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "tsc -b && vite build",
+    "dev": "vite",
     "lint": "cd ../.. && eslint packages/myblog-frontend",
     "preview": "vite preview"
   },

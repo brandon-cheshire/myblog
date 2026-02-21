@@ -22,7 +22,7 @@ const upload = multer({
 export function processMulterUpload(
   req: Request,
   res: Response,
-  fieldName: string = 'profilePicture',
+  fieldName: string = 'profilePicture'
 ): Promise<Express.Multer.File> {
   return new Promise((resolve, reject) => {
     const multerMiddleware = upload.single(fieldName);

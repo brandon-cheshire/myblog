@@ -1,16 +1,20 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import eslintConfigPrettier from 'eslint-config-prettier'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
+import eslintConfigPrettier from 'eslint-config-prettier';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
-const backendFiles = ['packages/myblog-backend/**/*.{js,mjs,cjs,ts}']
-const frontendFiles = ['packages/myblog-frontend/**/*.{ts,tsx}']
+const backendFiles = ['packages/myblog-backend/**/*.{js,mjs,cjs,ts}'];
+const frontendFiles = ['packages/myblog-frontend/**/*.{ts,tsx}'];
 
 export default defineConfig([
-  globalIgnores(['node_modules/**', 'dist/**', 'packages/myblog-backend/**/*.js']),
+  globalIgnores([
+    'node_modules/**',
+    'dist/**',
+    'packages/myblog-backend/**/*.js',
+  ]),
   {
     files: backendFiles,
     languageOptions: {
@@ -42,4 +46,4 @@ export default defineConfig([
     },
   },
   eslintConfigPrettier,
-])
+]);

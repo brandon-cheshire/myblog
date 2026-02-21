@@ -7,11 +7,15 @@ import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
 
 // Load environment variables from the backend .env file
-dotenv.config({ path: join(dirname(fileURLToPath(import.meta.url)), '../../.env') });
+dotenv.config({
+  path: join(dirname(fileURLToPath(import.meta.url)), '../../.env'),
+});
 
 if (!process.env.DATABASE_URL) {
   console.error('❌ DATABASE_URL environment variable is not set.');
-  console.error('   Make sure your .env file contains DATABASE_URL=postgresql://user:password@host:port/database');
+  console.error(
+    '   Make sure your .env file contains DATABASE_URL=postgresql://user:password@host:port/database'
+  );
   process.exit(1);
 }
 
@@ -39,7 +43,7 @@ async function runMigrations(): Promise<void> {
     // Get all migration files
     const migrationFiles = await fs.readdir(MIGRATIONS_DIR);
     const sqlFiles = migrationFiles
-      .filter(file => file.endsWith('.sql'))
+      .filter((file) => file.endsWith('.sql'))
       .sort(); // Sort to ensure consistent order
 
     if (sqlFiles.length === 0) {
@@ -48,7 +52,7 @@ async function runMigrations(): Promise<void> {
     }
 
     console.log(`📁 Found ${sqlFiles.length} migration file(s):`);
-    sqlFiles.forEach(file => console.log(`   - ${file}`));
+    sqlFiles.forEach((file) => console.log(`   - ${file}`));
     console.log('');
 
     const results: MigrationResult[] = [];
@@ -66,9 +70,9 @@ async function runMigrations(): Promise<void> {
 
         results.push({ file, executed: true });
         console.log(`✅ Successfully executed: ${file}\n`);
-
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
         console.error(`❌ Failed to execute: ${file}`);
         console.error(`   Error: ${errorMessage}\n`);
 
@@ -83,22 +87,21 @@ async function runMigrations(): Promise<void> {
     console.log('📊 Migration Summary:');
     console.log('='.repeat(50));
 
-    const successful = results.filter(r => r.executed);
-    const failed = results.filter(r => !r.executed);
+    const successful = results.filter((r) => r.executed);
+    const failed = results.filter((r) => !r.executed);
 
     console.log(`✅ Successful: ${successful.length}`);
     console.log(`❌ Failed: ${failed.length}`);
 
     if (failed.length > 0) {
       console.log('\n❌ Failed migrations:');
-      failed.forEach(result => {
+      failed.forEach((result) => {
         console.log(`   - ${result.file}: ${result.error}`);
       });
       process.exit(1);
     }
 
     console.log('\n🎉 All migrations completed successfully!');
-
   } catch (error) {
     console.error('💥 Migration runner failed:', error);
     process.exit(1);

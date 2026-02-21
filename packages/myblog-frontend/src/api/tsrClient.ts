@@ -3,17 +3,21 @@ import { initTsrReactQuery } from '@ts-rest/react-query/v5';
 import type { z } from 'zod';
 
 // Types inferred from contract (replaces api/client + api/posts)
-export type User = z.infer<typeof contract.auth.getCurrentUser.responses[200]>;
-export type Post = z.infer<typeof contract.posts.getPost.responses[200]>;
+export type User = z.infer<
+  (typeof contract.auth.getCurrentUser.responses)[200]
+>;
+export type Post = z.infer<(typeof contract.posts.getPost.responses)[200]>;
 
 // In dev: use /api so Vite proxy forwards to backend (avoids CORS). Set VITE_API_URL to call backend directly.
 const useProxy = import.meta.env.DEV && !import.meta.env.VITE_API_URL;
 const baseUrl = useProxy
   ? '/api'
   : (() => {
-    const origin = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    return origin.endsWith('/api') ? origin : `${origin.replace(/\/$/, '')}/api`;
-  })();
+      const origin = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      return origin.endsWith('/api')
+        ? origin
+        : `${origin.replace(/\/$/, '')}/api`;
+    })();
 
 // Single React Query client with Bearer token (used for auth, users, posts)
 export const tsrClient = initTsrReactQuery(contract, {
@@ -52,8 +56,12 @@ export const api = {
       body: formData,
     });
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Upload failed' }));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: 'Upload failed' }));
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
     }
     return await response.json();
   },

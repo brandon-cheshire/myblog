@@ -9,7 +9,7 @@ import type { Post } from '../../api/tsrClient';
 import './ComposePostPrompt.css';
 
 interface MyPostsProps {
-  userId?: string
+  userId?: string;
 }
 
 export function MyPosts({ userId }: MyPostsProps) {
@@ -17,11 +17,20 @@ export function MyPosts({ userId }: MyPostsProps) {
   const { allPostsRefreshKey, getUserPostsRefreshKey } = usePostsContext();
 
   const targetUserId = userId || currentUser?.id;
-  const userPostsRefreshKey = targetUserId ? getUserPostsRefreshKey(targetUserId) : 0;
+  const userPostsRefreshKey = targetUserId
+    ? getUserPostsRefreshKey(targetUserId)
+    : 0;
 
   const postsQuery = tsrClient.users.getUserPosts.useQuery({
-    queryKey: ['user-posts', targetUserId ?? '', allPostsRefreshKey, userPostsRefreshKey],
-    queryData: targetUserId ? { params: { id: targetUserId } } : ({} as { params: { id: string } }),
+    queryKey: [
+      'user-posts',
+      targetUserId ?? '',
+      allPostsRefreshKey,
+      userPostsRefreshKey,
+    ],
+    queryData: targetUserId
+      ? { params: { id: targetUserId } }
+      : ({} as { params: { id: string } }),
     enabled: !!targetUserId,
     staleTime: 30_000,
   });
@@ -67,7 +76,9 @@ export function MyPosts({ userId }: MyPostsProps) {
     handleCloseOverlay();
   };
 
-  const handleOverlayClickWithNewPost = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleOverlayClickWithNewPost = (
+    e: React.MouseEvent<HTMLDivElement>
+  ) => {
     if (e.target === e.currentTarget) {
       handleCloseOverlayWithNewPost();
     }
@@ -91,8 +102,8 @@ export function MyPosts({ userId }: MyPostsProps) {
         <div className="empty-state">
           <p>
             {isOwnProfile
-              ? 'You haven\'t created any posts yet.'
-              : 'This user hasn\'t created any posts yet.'}
+              ? "You haven't created any posts yet."
+              : "This user hasn't created any posts yet."}
           </p>
           {isOwnProfile && (
             <button onClick={handleNewPost} className="primary-btn">
@@ -103,7 +114,11 @@ export function MyPosts({ userId }: MyPostsProps) {
       ) : (
         <div className="posts-feed">
           {posts
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )
             .map((post) => (
               <PostItem
                 key={post._id}
@@ -117,7 +132,10 @@ export function MyPosts({ userId }: MyPostsProps) {
       )}
 
       {isOverlayOpen && (
-        <div className="compose-overlay" onClick={handleOverlayClickWithNewPost}>
+        <div
+          className="compose-overlay"
+          onClick={handleOverlayClickWithNewPost}
+        >
           <div className="compose-overlay-content">
             <div className="compose-overlay-header">
               <h2>{isNewPost ? 'Compose Post' : 'Edit Post'}</h2>

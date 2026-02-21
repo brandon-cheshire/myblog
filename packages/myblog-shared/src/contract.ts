@@ -1,7 +1,14 @@
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
 import { postSchema, postResponseSchema } from './post/post.schema';
-import { loginSchema, registrationSchema, twoFactorAuthenticationCodeSchema, changePasswordSchema, resetPasswordSchema, resetPasswordConfirmSchema } from './auth/auth.schema';
+import {
+  loginSchema,
+  registrationSchema,
+  twoFactorAuthenticationCodeSchema,
+  changePasswordSchema,
+  resetPasswordSchema,
+  resetPasswordConfirmSchema,
+} from './auth/auth.schema';
 import { updateUsernameSchema, userResponseSchema } from './user/user.schema';
 
 const c = initContract();
@@ -87,7 +94,10 @@ export const postContract = c.router({
     body: postSchema,
     responses: {
       201: postResponseSchema,
-      400: z.object({ error: z.string(), details: z.array(z.object({ field: z.string(), message: z.string() })) }),
+      400: z.object({
+        error: z.string(),
+        details: z.array(z.object({ field: z.string(), message: z.string() })),
+      }),
     },
     summary: 'Create a new post',
   },
@@ -130,10 +140,14 @@ export const authContract = c.router({
       200: userResponseSchema.extend({ token: z.string().optional() }),
       400: z.object({
         error: z.string(),
-        details: z.array(z.object({
-          field: z.string(),
-          message: z.string()
-        })).optional()
+        details: z
+          .array(
+            z.object({
+              field: z.string(),
+              message: z.string(),
+            })
+          )
+          .optional(),
       }),
     },
     summary: 'Register a new user',

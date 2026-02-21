@@ -18,7 +18,11 @@ export interface UserTable {
   twoFactorAuthenticationCode: string | null;
   status: UserStatusType;
   verificationCode: string | null;
-  verificationCodeExpiresAt: ColumnType<Date, string | undefined, string | null> | null;
+  verificationCodeExpiresAt: ColumnType<
+    Date,
+    string | undefined,
+    string | null
+  > | null;
   createdAt: ColumnType<Date, string | undefined, never>;
   updatedAt: ColumnType<Date, string | undefined, string | null> | null;
 }

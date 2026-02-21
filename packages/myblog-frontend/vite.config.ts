@@ -7,7 +7,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@myblog/shared': path.resolve(__dirname, '../myblog-shared/src/index.ts'),
+      '@myblog/shared': path.resolve(
+        __dirname,
+        '../myblog-shared/src/index.ts'
+      ),
     },
   },
   optimizeDeps: {

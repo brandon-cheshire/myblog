@@ -21,7 +21,10 @@ export function Banner() {
   // Close profile dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
         setIsProfileDropdownOpen(false);
       }
     };
@@ -132,9 +135,7 @@ export function Banner() {
             {/* Placeholder for logo - you can replace this with an actual logo image */}
             <span className="logo-icon">📝</span>
           </div>
-          <h1 className="site-name">
-            My Blog
-          </h1>
+          <h1 className="site-name">My Blog</h1>
         </div>
         {user && (
           <div className="profile-section" ref={profileDropdownRef}>
@@ -174,10 +175,7 @@ export function Banner() {
                   </div>
                   <span className="profile-username">{user.name}</span>
                 </div>
-                <button
-                  className="dropdown-item"
-                  onClick={handleSettingsClick}
-                >
+                <button className="dropdown-item" onClick={handleSettingsClick}>
                   ⚙️ Settings
                 </button>
                 <button

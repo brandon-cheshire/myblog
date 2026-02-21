@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 interface TwoFactorAuthFormProps {
-  onCancel: () => void
+  onCancel: () => void;
 }
 
 export function TwoFactorAuthForm({ onCancel }: TwoFactorAuthFormProps) {
@@ -16,7 +16,7 @@ export function TwoFactorAuthForm({ onCancel }: TwoFactorAuthFormProps) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
       await authenticateTwoFactor(code);
       setCode('');
@@ -31,16 +31,24 @@ export function TwoFactorAuthForm({ onCancel }: TwoFactorAuthFormProps) {
     <div>
       <h2>Two-Factor Authentication</h2>
       <p>Please enter the 6-digit code from your authenticator app.</p>
-      
+
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '5px',
+              fontWeight: 'bold',
+            }}
+          >
             Authentication Code:
           </label>
           <input
             type="text"
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            onChange={(e) =>
+              setCode(e.target.value.replace(/\D/g, '').slice(0, 6))
+            }
             placeholder="000000"
             required
             style={{
@@ -55,13 +63,13 @@ export function TwoFactorAuthForm({ onCancel }: TwoFactorAuthFormProps) {
             }}
           />
         </div>
-        
+
         {error && (
           <p style={{ color: 'red', marginBottom: '10px', fontSize: '14px' }}>
             {error}
           </p>
         )}
-        
+
         <div style={{ display: 'flex', gap: '10px' }}>
           <button
             type="submit"
@@ -81,7 +89,7 @@ export function TwoFactorAuthForm({ onCancel }: TwoFactorAuthFormProps) {
           >
             {loading ? 'Verifying...' : 'Verify'}
           </button>
-          
+
           <button
             type="button"
             onClick={onCancel}
@@ -105,4 +113,3 @@ export function TwoFactorAuthForm({ onCancel }: TwoFactorAuthFormProps) {
     </div>
   );
 }
-
