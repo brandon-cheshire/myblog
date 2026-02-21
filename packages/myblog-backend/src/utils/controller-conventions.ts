@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { HttpException } from '../exceptions/HttpException';
+import { HttpException } from '../common/HttpException';
 import type { AppLogger } from '../common/utils/app-logger/app-logger';
 
 /** Standard error body shape for ts-rest responses (matches contract). */

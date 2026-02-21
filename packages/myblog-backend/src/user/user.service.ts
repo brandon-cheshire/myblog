@@ -2,8 +2,10 @@ import * as path from 'path';
 import { UserRepository } from './user.repository';
 import { AddressRepository } from './address.repository';
 import { hashData } from '../common/utils/bcrypt';
-import { UserWithThatEmailAlreadyExistsException } from '../exceptions/UserWithThatEmailAlreadyExistsException';
-import { UsernameAlreadyTakenException } from '../exceptions/UsernameAlreadyTakenException';
+import {
+  UserWithThatEmailAlreadyExistsException,
+  UsernameAlreadyTakenException,
+} from './user.errors';
 import type { User } from '../database/types';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 import {
@@ -180,10 +182,9 @@ export class UserService {
   }
 
   /**
-     * Update user's username
+     * Update user's username. Returns the updated user.
      */
-  async updateUsername(userId: string, username: string): Promise<void> {
-    // Check if username is already taken
+  async updateUsername(userId: string, username: string) {
     const isTaken = await this.userRepository.isUsernameTaken(username, userId);
     if (isTaken) {
       throw new UsernameAlreadyTakenException(username);
@@ -191,6 +192,12 @@ export class UserService {
 
     await this.userRepository.updateUsername(userId, username);
     this.logger.info('Username updated', { userId });
+
+    const updatedUser = await this.getUserById(userId);
+    if (!updatedUser) {
+      throw new Error('User not found after username update');
+    }
+    return updatedUser;
   }
 
   /**

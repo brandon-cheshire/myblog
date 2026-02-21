@@ -45,14 +45,7 @@ export const userRouter = s.router(userContract, {
     try {
       const user = await getAuthenticatedUser(ctx);
       const { username } = ctx.body;
-
-      await userService.updateUsername(user.id, username);
-
-      const updatedUser = await userService.getUserById(user.id);
-      if (!updatedUser) {
-        return errorResponse(404, 'User not found');
-      }
-
+      const updatedUser = await userService.updateUsername(user.id, username);
       return { status: 200 as const, body: updatedUser };
     } catch (error) {
       return handleControllerError(error, { logger, context: 'updateUsername' }) as never;

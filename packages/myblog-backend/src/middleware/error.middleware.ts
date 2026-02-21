@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { HttpException } from '../exceptions/HttpException';
+import { HttpException } from '../common/HttpException';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 
 const logger = new AppLogger('ErrorMiddleware');

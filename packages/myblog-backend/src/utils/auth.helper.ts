@@ -2,8 +2,10 @@ import jwt from 'jsonwebtoken';
 import type { Request } from 'express';
 import { DataStoredInToken } from '../auth/auth.service';
 import { db } from './database';
-import { WrongAuthenticationTokenException } from '../exceptions/WrongAuthenticationTokenException';
-import { AuthenticationTokenMissingException } from '../exceptions/AuthenticationTokenMissingException';
+import {
+  WrongAuthenticationTokenException,
+  AuthenticationTokenMissingException,
+} from '../auth/auth.errors';
 import type { User } from '../database/types';
 
 function getTokenFromRequest(req: Request): string | null {

@@ -1,8 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { PostResponse } from '@myblog/shared';
 import { PostRepository, type PostWithAuthor } from './post.repository';
-import { PostNotFoundException } from '../exceptions/PostNotFoundException';
-import { NotAuthorizedException } from '../exceptions/NotAuthorizedException';
+import { PostNotFoundException, NotAuthorizedException } from './post.errors';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 
 export class PostService {

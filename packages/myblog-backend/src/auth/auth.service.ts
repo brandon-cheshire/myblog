@@ -6,10 +6,12 @@ import { UserRepository } from '../user/user.repository';
 import { UserService } from '../user/user.service';
 import { hashData, compareHashedData } from '../common/utils/bcrypt';
 import { generateVerificationCode, generateVerificationCodeExpiry, isVerificationCodeExpired } from '../common/utils/verification.utils';
-import { WrongCredentialsException } from '../exceptions/WrongCredentialsException';
-import { PasswordResetRequiredException } from '../exceptions/PasswordResetRequiredException';
-import { WrongAuthenticationTokenException } from '../exceptions/WrongAuthenticationTokenException';
-import { UserNotActiveException } from '../exceptions/UserNotActiveException';
+import {
+  WrongCredentialsException,
+  PasswordResetRequiredException,
+  WrongAuthenticationTokenException,
+  UserNotActiveException,
+} from './auth.errors';
 import type { User } from '../database/types';
 import type { UserWithPasswordHash } from '../user/user.types';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
