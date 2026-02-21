@@ -1,24 +1,9 @@
 import { randomUUID } from 'node:crypto';
+import type { PostResponse } from '@myblog/shared';
 import { PostRepository, type PostWithAuthor } from './post.repository';
 import { PostNotFoundException } from '../exceptions/PostNotFoundException';
 import { NotAuthorizedException } from '../exceptions/NotAuthorizedException';
-import type { User } from '../database/types';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
-
-export interface PostResponse {
-    _id: string;
-    title: string;
-    content: string;
-    author?: {
-        _id: string;
-        name: string;
-        email: string;
-        username?: string | null;
-        profilePicture?: string;
-    };
-    createdAt: string;
-    updatedAt: string;
-}
 
 export class PostService {
     private readonly logger = new AppLogger(PostService.name);

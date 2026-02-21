@@ -1,41 +1,10 @@
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
-import { postSchema } from './post/post.schema';
+import { postSchema, postResponseSchema } from './post/post.schema';
 import { loginSchema, registrationSchema, twoFactorAuthenticationCodeSchema, changePasswordSchema, resetPasswordSchema, resetPasswordConfirmSchema } from './auth/auth.schema';
-import { updateUsernameSchema } from './user/user.schema';
+import { updateUsernameSchema, userResponseSchema } from './user/user.schema';
 
 const c = initContract();
-
-// Response schemas (what the API returns - excludes sensitive fields)
-const UserResponse = z.object({
-  id: z.string(),
-  name: z.string(),
-  email: z.string(),
-  username: z.string().nullable().optional(),
-  profilePicture: z.string().optional(),
-  createdAt: z.string().optional(),
-  isTwoFactorEnabled: z.boolean().optional(),
-  address: z.object({
-    street: z.string(),
-    city: z.string(),
-    country: z.string(),
-  }).optional(),
-});
-
-const PostResponse = z.object({
-  _id: z.string(),
-  title: z.string(),
-  content: z.string(),
-  author: z.object({
-    _id: z.string(),
-    name: z.string(),
-    email: z.string(),
-    username: z.string().nullable().optional(),
-    profilePicture: z.string().optional(),
-  }).optional(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
 
 export const userContract = c.router({
   getUser: {
@@ -43,7 +12,7 @@ export const userContract = c.router({
     path: '/users/:id',
     pathParams: z.object({ id: z.string() }),
     responses: {
-      200: UserResponse,
+      200: userResponseSchema,
     },
     summary: 'Get a user by id',
   },
@@ -52,7 +21,7 @@ export const userContract = c.router({
     path: '/users/:id/posts',
     pathParams: z.object({ id: z.string() }),
     responses: {
-      200: z.array(PostResponse),
+      200: z.array(postResponseSchema),
       403: z.object({ error: z.string() }),
     },
     summary: 'Get posts by a specific user',
@@ -75,7 +44,7 @@ export const userContract = c.router({
     path: '/users/username',
     body: updateUsernameSchema,
     responses: {
-      200: UserResponse,
+      200: userResponseSchema,
       400: z.object({ error: z.string() }),
       401: z.object({ error: z.string() }),
       409: z.object({ error: z.string() }),
@@ -87,7 +56,7 @@ export const userContract = c.router({
     path: '/users/username/:username',
     pathParams: z.object({ username: z.string() }),
     responses: {
-      200: UserResponse,
+      200: userResponseSchema,
       404: z.object({ error: z.string() }),
     },
     summary: 'Get a user by username',
@@ -99,7 +68,7 @@ export const postContract = c.router({
     method: 'GET',
     path: '/posts',
     responses: {
-      200: z.array(PostResponse),
+      200: z.array(postResponseSchema),
     },
     summary: 'Get all posts',
   },
@@ -108,7 +77,7 @@ export const postContract = c.router({
     path: '/posts/:id',
     pathParams: z.object({ id: z.string() }),
     responses: {
-      200: PostResponse,
+      200: postResponseSchema,
     },
     summary: 'Get a post by id',
   },
@@ -117,7 +86,7 @@ export const postContract = c.router({
     path: '/posts',
     body: postSchema,
     responses: {
-      201: PostResponse,
+      201: postResponseSchema,
       400: z.object({ error: z.string(), details: z.array(z.object({ field: z.string(), message: z.string() })) }),
     },
     summary: 'Create a new post',
@@ -128,7 +97,7 @@ export const postContract = c.router({
     pathParams: z.object({ id: z.string() }),
     body: postSchema.partial(),
     responses: {
-      200: PostResponse,
+      200: postResponseSchema,
     },
     summary: 'Update a post',
   },
@@ -148,7 +117,7 @@ export const authContract = c.router({
     method: 'GET',
     path: '/auth/me',
     responses: {
-      200: UserResponse,
+      200: userResponseSchema,
       401: z.object({ error: z.string() }),
     },
     summary: 'Get current authenticated user',
@@ -158,7 +127,7 @@ export const authContract = c.router({
     path: '/auth/register',
     body: registrationSchema,
     responses: {
-      200: UserResponse.extend({ token: z.string().optional() }),
+      200: userResponseSchema.extend({ token: z.string().optional() }),
       400: z.object({
         error: z.string(),
         details: z.array(z.object({
@@ -174,7 +143,7 @@ export const authContract = c.router({
     path: '/auth/login',
     body: loginSchema,
     responses: {
-      200: UserResponse.extend({
+      200: userResponseSchema.extend({
         isTwoFactorAuthenticationEnabled: z.boolean().optional(),
         token: z.string().optional(),
       }),
@@ -195,7 +164,7 @@ export const authContract = c.router({
     path: '/auth/2fa/authenticate',
     body: twoFactorAuthenticationCodeSchema,
     responses: {
-      200: UserResponse.extend({ token: z.string().optional() }),
+      200: userResponseSchema.extend({ token: z.string().optional() }),
     },
     summary: 'Authenticate with 2FA code',
   },

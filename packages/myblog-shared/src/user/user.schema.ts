@@ -66,26 +66,29 @@ export const userLoginSchema = z.object({
 
 export type UserLogin = z.infer<typeof userLoginSchema>;
 
-// User response schema (without sensitive fields)
+// API response shape (serialized, no sensitive fields)
+const addressResponseSchema = z.object({
+    street: z.string(),
+    city: z.string(),
+    country: z.string(),
+});
+
 export const userResponseSchema = z.object({
     id: z.string(),
     name: z.string(),
     email: z.string(),
-    username: z.string().nullable(),
-    profilePicture: z.string().nullable(),
-    status: userStatusTypeSchema,
-    verificationCode: z.string().nullable(),
-    verificationCodeExpiresAt: z.date().nullable(),
-    createdAt: z.date(),
-    isTwoFactorEnabled: z.boolean(),
-    address: addressSchema.optional(),
+    username: z.string().nullable().optional(),
+    profilePicture: z.string().optional(),
+    createdAt: z.string().optional(),
+    isTwoFactorEnabled: z.boolean().optional(),
+    address: addressResponseSchema.optional(),
 });
+
+export type UserResponse = z.infer<typeof userResponseSchema>;
 
 // Username update schema
 export const updateUsernameSchema = z.object({
     username: usernameSchema,
 });
 export type UpdateUsername = z.infer<typeof updateUsernameSchema>;
-
-export type UserResponse = z.infer<typeof userResponseSchema>;
 
