@@ -287,7 +287,7 @@ export class AuthService {
      */
   async generateTwoFactor(userId: string, res: Response): Promise<void> {
     const { otpauthUrl, base32 } = this.getTwoFactorAuthenticationCode();
-    await this.userService.updateTwoFactorCode(userId, base32);
+    await this.userService.updateTwoFactorCode({ userId, code: base32 });
     await this.respondWithQRCode(otpauthUrl || '', res);
     this.logger.info('2FA QR code generated', { userId });
   }

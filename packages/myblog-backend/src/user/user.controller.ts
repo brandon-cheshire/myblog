@@ -81,7 +81,10 @@ export const userRouter = s.router(userContract, {
         return errorResponse(400, err.message ?? 'File upload failed');
       }
 
-      const result = await userService.uploadProfilePicture(user.id, file);
+      const result = await userService.uploadProfilePicture({
+        userId: user.id,
+        file,
+      });
       return { status: 200 as const, body: result };
     } catch (error) {
       return handleControllerError(error, { logger, context: 'uploadProfilePicture' }) as never;

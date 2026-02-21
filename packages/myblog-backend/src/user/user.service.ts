@@ -201,7 +201,11 @@ export class UserService {
   /**
      * Update user's profile picture (DB only)
      */
-  async updateProfilePicture(userId: string, filename: string): Promise<void> {
+  async updateProfilePicture(params: {
+    userId: string;
+    filename: string;
+  }): Promise<void> {
+    const { userId, filename } = params;
     await this.userRepository.updateProfilePicture(userId, filename);
     this.logger.info('Profile picture updated', { userId });
   }
@@ -209,10 +213,11 @@ export class UserService {
   /**
      * Upload profile picture: ensure bucket, store in MinIO, remove previous if any, update user.
      */
-  async uploadProfilePicture(
-    userId: string,
-    file: Express.Multer.File,
-  ): Promise<{ profilePicture: string }> {
+  async uploadProfilePicture(params: {
+    userId: string;
+    file: Express.Multer.File;
+  }): Promise<{ profilePicture: string }> {
+    const { userId, file } = params;
     await ensureBucketExists(PROFILE_PICTURES_BUCKET);
 
     const timestamp = Date.now();
@@ -265,7 +270,11 @@ export class UserService {
   /**
      * Update 2FA code for user
      */
-  async updateTwoFactorCode(userId: string, code: string): Promise<void> {
+  async updateTwoFactorCode(params: {
+    userId: string;
+    code: string;
+  }): Promise<void> {
+    const { userId, code } = params;
     await this.userRepository.updateTwoFactorCode(userId, code);
   }
 }
