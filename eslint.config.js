@@ -3,6 +3,7 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
+import eslintConfigPrettier from 'eslint-config-prettier'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 const backendFiles = ['packages/myblog-backend/**/*.{js,mjs,cjs,ts}']
@@ -34,15 +35,11 @@ export default defineConfig([
     files: [...backendFiles, ...frontendFiles],
     rules: {
       curly: ['error', 'all'],
-      'brace-style': ['error', '1tbs', { allowSingleLine: false }],
-      quotes: ['error', 'single'],
-      semi: ['error', 'always'],
-      'comma-dangle': ['error', 'always-multiline'],
-      indent: ['error', 2],
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
     },
   },
+  eslintConfigPrettier,
 ])
