@@ -3,6 +3,7 @@ import { UserRepository } from './user.repository';
 import { AddressRepository } from './address.repository';
 import { hashData } from '../common/utils/bcrypt';
 import {
+  UserNotFoundException,
   UserWithThatEmailAlreadyExistsException,
   UsernameAlreadyTakenException,
 } from './user.errors';
@@ -137,7 +138,7 @@ export class UserService {
   async getUserById(id: string) {
     const user = await this.userRepository.findByIdWithAddress(id);
     if (!user) {
-      return null;
+      throw new UserNotFoundException(id);
     }
 
     return {
@@ -162,7 +163,7 @@ export class UserService {
   async getUserByUsername(username: string) {
     const user = await this.userRepository.findByUsernameWithAddress(username);
     if (!user) {
-      return null;
+      throw new UserNotFoundException(username);
     }
 
     return {
@@ -184,7 +185,8 @@ export class UserService {
   /**
      * Update user's username. Returns the updated user.
      */
-  async updateUsername(userId: string, username: string) {
+  async updateUsername(params: { userId: string; username: string }) {
+    const { userId, username } = params;
     const isTaken = await this.userRepository.isUsernameTaken(username, userId);
     if (isTaken) {
       throw new UsernameAlreadyTakenException(username);
@@ -193,11 +195,7 @@ export class UserService {
     await this.userRepository.updateUsername(userId, username);
     this.logger.info('Username updated', { userId });
 
-    const updatedUser = await this.getUserById(userId);
-    if (!updatedUser) {
-      throw new Error('User not found after username update');
-    }
-    return updatedUser;
+    return this.getUserById(userId);
   }
 
   /**

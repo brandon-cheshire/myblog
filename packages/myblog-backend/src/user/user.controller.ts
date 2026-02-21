@@ -20,9 +20,6 @@ export const userRouter = s.router(userContract, {
   getUser: async (ctx) => {
     try {
       const user = await userService.getUserById(ctx.params.id);
-      if (!user) {
-        return errorResponse(404, 'User not found');
-      }
       return { status: 200 as const, body: user };
     } catch (error) {
       return handleControllerError(error, { logger, context: 'getUser' }) as never;
@@ -32,9 +29,6 @@ export const userRouter = s.router(userContract, {
   getUserByUsername: async (ctx) => {
     try {
       const user = await userService.getUserByUsername(ctx.params.username);
-      if (!user) {
-        return errorResponse(404, 'User not found');
-      }
       return { status: 200 as const, body: user };
     } catch (error) {
       return handleControllerError(error, { logger, context: 'getUserByUsername' }) as never;
@@ -45,7 +39,10 @@ export const userRouter = s.router(userContract, {
     try {
       const user = await getAuthenticatedUser(ctx);
       const { username } = ctx.body;
-      const updatedUser = await userService.updateUsername(user.id, username);
+      const updatedUser = await userService.updateUsername({
+        userId: user.id,
+        username,
+      });
       return { status: 200 as const, body: updatedUser };
     } catch (error) {
       return handleControllerError(error, { logger, context: 'updateUsername' }) as never;
