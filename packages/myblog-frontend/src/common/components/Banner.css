@@ -1,0 +1,330 @@
+.site-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* Span entire width */
+  right: 0;
+  height: 60px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px var(--shadow);
+  z-index: 200;
+  /* Above sidebar and content */
+}
+
+.banner-content {
+  max-width: none;
+  margin: 0 auto;
+  padding: 0 2rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  position: relative;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #646cff;
+  border-radius: 8px;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.logo.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logo.clickable:hover {
+  background: #535bf2;
+  transform: scale(1.05);
+}
+
+.logo-icon {
+  font-size: 1.5rem;
+}
+
+.site-name {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.site-name.clickable {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.site-name.clickable:hover {
+  color: var(--accent-color);
+}
+
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.profile-picture {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+}
+
+.profile-picture.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-picture.clickable:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
+}
+
+.profile-picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  font-size: 1.2rem;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: -2rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow-hover);
+  min-width: 160px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg-primary);
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dropdown-item:focus,
+.dropdown-item:active {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.dropdown-item-profile {
+  cursor: default;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dropdown-item-profile:hover {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.profile-picture-small {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  flex-shrink: 0;
+  background: var(--bg-primary);
+}
+
+.profile-picture-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-placeholder-small {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  font-size: 1rem;
+}
+
+.dropdown-item-profile .profile-username {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  flex: 1;
+}
+
+.dropdown-item-logout {
+  color: var(--error-color);
+}
+
+.dropdown-item-logout:hover {
+  background: var(--bg-secondary);
+  color: var(--error-hover);
+}
+
+/* ===== HAMBURGER MENU ===== */
+.hamburger-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 10;
+  gap: 4px;
+  outline: none;
+}
+
+.hamburger-menu:active,
+.hamburger-menu:focus {
+  outline: none;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.hamburger-line {
+  width: 100%;
+  height: 3px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.hamburger-menu:hover .hamburger-line {
+  background: var(--accent-color);
+}
+
+/* ===== NAVIGATION DROPDOWN (SIDEBAR STYLE) ===== */
+.nav-dropdown-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.nav-dropdown {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 280px;
+  height: calc(100vh - 60px);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.nav-dropdown-header {
+  padding: 2rem 1.5rem 2rem 0.75rem;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.nav-dropdown-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+}
+
+.nav-dropdown-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 0.75rem 0 0.75rem;
+  min-height: 0;
+}
+
+.nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  position: relative;
+  flex-shrink: 0;
+  margin-bottom: 0.25rem;
+}
+
+.nav-dropdown-item:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.nav-dropdown-item.active {
+  background: var(--accent-color);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.3);
+}
+
+.nav-dropdown-item.active:hover {
+  background: var(--accent-hover);
+}

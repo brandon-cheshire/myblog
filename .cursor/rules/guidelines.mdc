@@ -1,0 +1,427 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+# Development Guidelines
+
+## Overview
+
+Essential coding conventions for the myblog codebase. Standard practices (linting/tsconfig) omitted.
+
+## TypeScript Conventions
+
+### Naming
+
+- **Meaningful names**: Answer why, what, and how
+- **Full names**: `user` not `u`, `post` not `p`
+- **Pronounceable**: If you can't say it, you can't discuss it
+- **No redundant context**: Don't repeat class/type names
+
+```typescript
+// ✅ Good
+type Post = { id: string; title: string; content: string; authorId: string };
+// ❌ Bad
+type Post = {
+  postId: string;
+  postTitle: string;
+  postContent: string;
+  postAuthorId: string;
+};
+```
+
+### Case Conventions
+
+Choose the appropriate case style based on context and external integrations:
+
+**kebab-case** for external interfaces and web-standard contexts:
+
+- npm package names and library identifiers
+- HTTP headers and API endpoints (e.g. `/auth/login`, `/users/:id`)
+- Backend filenames (e.g. `auth.controller.ts`, `post.repository.ts`)
+
+**snake_case** for internal data structures and database contexts:
+
+- Constants used in enum literals and type unions
+- Database table column names and field identifiers (when following snake_case schema)
+
+```typescript
+// ✅ Good - kebab-case for external identifiers
+const apiEndpoint = '/api/posts';
+const authPath = '/auth/login';
+
+// ✅ Good - snake_case for internal constants and DB fields
+export const USER_ROLES = ['admin', 'member'] as const;
+const dbQuery = { user_id: '123', created_at: new Date() };
+```
+
+### Boolean Naming
+
+- Positive names with prefixes: `is`, `are`, `has`, `should`
+
+```typescript
+// ✅ Good
+const isEnabled = false;
+const hasPermission = true;
+const loading = query.isLoading;
+// ❌ Bad
+const isNotEnabled = true;
+const enabled = false;
+```
+
+### Class Member Access
+
+Use implicit public access, explicit private/protected only:
+
+```typescript
+// ✅ Good
+class PostService {
+  private readonly logger = new AppLogger(PostService.name);
+  private postRepository = new PostRepository();
+}
+
+// ❌ Bad
+class PostService {
+  public postRepository = new PostRepository();
+  private readonly logger = new AppLogger(PostService.name);
+}
+```
+
+### Type Inference vs Explicit Types
+
+Let TypeScript infer types from function returns, but be explicit with object/array literals:
+
+```typescript
+// ✅ Good - infer from function return
+function getPostById(id: string): Promise<Post> {
+  /* ... */
+}
+const post = await getPostById(id); // post inferred as Post
+
+// ❌ Bad - redundant explicit typing
+const post: Post = await getPostById(id);
+
+// ✅ Good - explicit types for literals
+const config: DatabaseConfig = {
+  host: 'localhost',
+  port: 5432,
+  database: 'myblog',
+};
+
+// ❌ Bad - missing explicit type
+const config = {
+  host: 'localhost',
+  port: 5432,
+  database: 'myblog',
+};
+```
+
+### Direct Function Calls
+
+Call functions directly with object literals, avoid creating temporary variables:
+
+```typescript
+// ✅ Good
+createPost({
+  title: 'My post',
+  content: 'Hello world',
+  authorId: user.id,
+});
+
+// ❌ Bad
+const postParams = {
+  title: 'My post',
+  content: 'Hello world',
+  authorId: user.id,
+};
+createPost(postParams);
+```
+
+### Destructuring Assignment
+
+When functions return objects, prefer destructuring assignment:
+
+```typescript
+// ✅ Good
+const { user, loading } = useAuth();
+const { posts, fetchPosts } = usePosts();
+
+// ❌ Bad
+const auth = useAuth();
+const user = auth.user;
+const loading = auth.loading;
+```
+
+### Function Parameters
+
+Use parameter objects for functions with multiple parameters (2+ parameters):
+
+```typescript
+// ✅ Good
+interface CreatePostParams {
+  title: string;
+  content: string;
+  authorId: string;
+}
+
+function createPost(params: CreatePostParams) {
+  // Implementation
+}
+
+// ❌ Bad
+function createPost(title: string, content: string, authorId: string) {
+  // Implementation
+}
+```
+
+### Transaction Parameter Positioning
+
+When using database transactions, place the transaction parameter (`trx`) as the second parameter:
+
+```typescript
+// ✅ Good
+async function updatePost(
+  postId: string,
+  trx: Transaction,
+  updates: Partial<{ title: string; content: string }>,
+) {
+  // Implementation
+}
+
+// ❌ Bad
+async function updatePost(
+  postId: string,
+  updates: Partial<{ title: string; content: string }>,
+  trx: Transaction,
+) {
+  // Implementation
+}
+```
+
+### Comments
+
+- **Only add comments that provide explanatory power**
+- No basic comments that just restate what the code does
+- Write in English, precede with blank line
+- Link TODOs to issues: `// TODO: Consolidate queries. MYBLOG-123`
+
+## SQL Conventions
+
+### Naming
+
+- **Tables**: Match existing style (e.g. `posts`, `"User"`, `addresses`); use singular where it reads well
+- **Primary Keys**: `id` (UUIDs)
+- **Foreign Keys**: `[referencing_table]_id` or camelCase as in existing schema (e.g. `authorId`, `userId`)
+- **Constraints**: `<key_type>_<table_name>_<column_name>`
+- **Indexes**: `idx_<table_name>_<column_name>`
+
+### Required Fields
+
+Entity tables should include audit-style fields where applicable:
+
+- `id` (uuid primary key)
+- `createdAt` timestamptz (or `created_at` if using snake_case)
+- `updatedAt` / `updated_at` where updates are supported
+- For user-owned records: `authorId` / `userId` (or `author_id` / `user_id`)
+
+### Query Practices
+
+- No table aliases – use full table names
+- Use `timestamptz` (or consistent timestamp type) for date/time columns
+- Create indexes on columns used in WHERE / JOINs
+
+## React Conventions
+
+### Organization
+
+Organize by domains (not features). Each domain has its own folder under `src` with subfolders as needed:
+
+```
+packages/myblog-frontend/src/
+├── api/
+├── auth/
+│   ├── components/
+│   ├── context/
+│   └── pages/
+├── common/
+│   ├── components/
+│   └── context/
+├── posts/
+│   ├── components/
+│   ├── context/
+│   ├── hooks/
+│   └── pages/
+└── users/
+    └── pages/
+```
+
+### File Naming
+
+- **Folders**: kebab-case
+- **Components**: PascalCase (e.g. `MainLayout.tsx`, `ComposePost.tsx`, `PostItem.tsx`)
+- **Hooks**: camelCase (e.g. `usePosts.ts`, `usePostOperations.ts`)
+
+### Naming Prefixes
+
+- **State/Props**: `is`, `has`, `should` for booleans
+- **Event Handlers**: `handle` or `on`
+- **Utilities**: `get`, `set`, `is`, `has`, `should`, `use`
+- **Context**: `Provider` or `Consumer` suffix (e.g. `AuthProvider`, `useAuth`)
+
+### State Management
+
+Use React Context instead of Redux/Zustand.
+
+### Import Organization
+
+Group with blank lines: React → 3rd party → Application
+
+## Backend Conventions (Express + ts-rest)
+
+### File Naming
+
+Include component type in the filename:
+
+- Routers/controllers: `auth.controller.ts`, `posts.controller.ts`
+- Services: `auth.service.ts`, `post.service.ts`
+- Repositories: `post.repository.ts`, `user.repository.ts`
+
+### Organization
+
+- One logical module per folder (e.g. `auth/`, `posts/`, `user/`)
+- Shared utilities and middleware live in `utils/`, `middleware/`, `common/`
+- Avoid circular dependencies – extract shared code into a common module
+
+### Architecture Patterns
+
+- **Repositories**: Data access only; encapsulate Kysely queries (e.g. `PostRepository`, `UserRepository`)
+- **Services**: Business logic; single responsibility; use repositories, not raw DB in services
+- **Controllers**: ts-rest routers; call services; use `handleControllerError` and return contract-shaped responses
+
+### Service Design
+
+- **Single responsibility**: If a method does "X and Y", consider splitting
+- **YAGNI**: Don’t add endpoints or logic for use cases that don’t exist yet
+- Use `npx knip` (or similar) to find unused exports
+
+### Logging
+
+- Use `AppLogger` as a private member: `private readonly logger = new AppLogger(PostService.name);`
+- **Don’t log sensitive values** (passwords, tokens, etc.)
+- Info-log mutations (create, update, delete); queries usually don’t need logging unless complex
+- Prefer `.info` or higher; avoid `.debug` in production unless needed
+- **No `console.log`** – use `AppLogger` instead
+
+### Error Handling
+
+- **Throw custom errors** from services (e.g. `PostNotFoundException`, `NotAuthorizedException` extending `HttpException`)
+- **Catch in controllers** and map to responses via `handleControllerError`
+- Don’t throw raw `Error` in application code; use the project’s exception classes
+
+```typescript
+// In controller
+try {
+  const result = await authService.login(ctx.body.email, ctx.body.password, ctx.res);
+  return { status: 200 as const, body: result };
+} catch (error) {
+  return handleControllerError(error, { logger, context: 'login' }) as never;
+}
+```
+
+## General Practices
+
+### No Barrel Files
+
+Import directly from source files:
+
+```typescript
+// ❌ Bad
+import { PostItem, ComposePost } from './components';
+// ✅ Good
+import { PostItem } from './posts/components/PostItem';
+import { ComposePost } from './posts/components/ComposePost';
+```
+
+### Code Organization
+
+Minimize nested conditionals; prefer early returns:
+
+```typescript
+// ✅ Good - early returns
+function canEditPost(user: User, post: Post): boolean {
+  if (!user) return false;
+  if (post.authorId !== user.id) return false;
+  return true;
+}
+
+// ❌ Bad - nested conditions
+function canEditPost(user: User, post: Post): boolean {
+  if (user) {
+    if (post.authorId === user.id) return true;
+  }
+  return false;
+}
+```
+
+### File Organization
+
+- **Constants**: Extract to `.constants.ts` files (e.g. `auth.constants.ts`)
+- **Pure functions**: Extract to `.utils.ts` files with unit tests (e.g. `verification.utils.ts` + spec)
+
+### Enum Preferences
+
+Prefer const arrays with Zod enums or type unions over TypeScript enums:
+
+```typescript
+// ✅ Good - const array with Zod
+export const USER_STATUSES = ['active', 'inactive', 'password_reset_required'] as const;
+export const UserStatusSchema = z.enum(USER_STATUSES);
+export type UserStatus = z.infer<typeof UserStatusSchema>;
+
+// ✅ Good - const array with type union
+export const ACTIONS = ['create', 'read', 'update', 'delete'] as const;
+export type Action = (typeof ACTIONS)[number];
+
+// ❌ Bad - TypeScript enum
+enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}
+```
+
+### Database Migrations
+
+- Use the project’s migration workflow (e.g. `yarn migrate`, migration scripts in `src/database/`)
+- Never create or alter database resources manually; always use migrations
+
+#### Migration Standards
+
+**Data types:**
+
+- Use `text` instead of `varchar` for string columns
+- Use `uuid` for primary keys with `gen_random_uuid()` (or equivalent) default
+- Use `timestamptz` (or project’s timestamp type) for date/time columns with `now()` defaults
+- Use `jsonb` for JSON data (not `json`)
+
+**Column naming:**
+
+- Primary keys: `id` (uuid)
+- Foreign keys: e.g. `authorId`, `userId` (or `author_id`, `user_id` if using snake_case)
+- Audit fields: `createdAt`/`updatedAt` (or `created_at`/`updated_at`)
+
+**Example migration pattern:**
+
+```sql
+CREATE TABLE posts (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "title" TEXT NOT NULL,
+  "content" TEXT NOT NULL,
+  "authorId" UUID NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_posts_author_id ON posts("authorId");
+CREATE INDEX idx_posts_created_at ON posts("createdAt");
+```

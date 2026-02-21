@@ -1,0 +1,41 @@
+services:
+    postgres:
+        image: postgres:15
+        container_name: postgresdb
+        ports:
+            - '5432:5432'
+        env_file:
+            - packages/myblog-backend/.env
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+
+    pgadmin:
+        image: dpage/pgadmin4:latest
+        container_name: pgadmin
+        ports:
+            - '5050:80'
+        env_file:
+            - packages/myblog-backend/.env
+        volumes:
+            - pgadmin_data:/var/lib/pgadmin
+        depends_on:
+            - postgres
+
+    minio:
+        image: minio/minio:latest
+        container_name: minio
+        ports:
+            - '9000:9000'
+            - '9001:9001'
+        environment:
+            MINIO_ROOT_USER: minioadmin
+            MINIO_ROOT_PASSWORD: minioadmin
+            MINIO_REGION: us-east-1
+        volumes:
+            - minio_data:/data
+        command: server /data --console-address ":9001"
+
+volumes:
+    postgres_data:
+    pgadmin_data:
+    minio_data:

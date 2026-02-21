@@ -1,0 +1,200 @@
+/* ===== COMPOSE POST PROMPT ===== */
+.compose-post-prompt {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 2rem;
+  max-width: 800px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Make border more visible in light theme */
+[data-theme="light"] .compose-post-prompt {
+  border-color: #d0d0d0;
+}
+
+.compose-post-prompt:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.prompt-profile-picture {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+}
+
+.prompt-profile-picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.prompt-profile-picture .profile-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--text-tertiary);
+}
+
+.prompt-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  box-sizing: border-box;
+}
+
+.prompt-input:hover {
+  background: var(--bg-tertiary);
+}
+
+.prompt-input:focus {
+  outline: none;
+  background: var(--bg-tertiary);
+}
+
+/* ===== COMPOSE OVERLAY ===== */
+.compose-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+  animation: fadeIn 0.2s ease;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.compose-overlay-content {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  width: 100%;
+  max-width: min(700px, calc(100vw - 4rem));
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.compose-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.compose-overlay-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+}
+
+.close-overlay-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.close-overlay-btn:hover {
+  background: var(--bg-tertiary);
+  transform: scale(1.1);
+}
+
+.compose-overlay-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* Ensure the compose post form looks good in overlay */
+.compose-overlay-body .compose-post {
+  padding: 0;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+.compose-overlay-body .post-form {
+  margin: 0;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+.compose-overlay-body .form-group {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+.compose-overlay-body .form-group input,
+.compose-overlay-body .form-group textarea {
+  box-sizing: border-box;
+  max-width: 100%;
+}

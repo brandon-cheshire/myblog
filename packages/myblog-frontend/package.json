@@ -1,0 +1,30 @@
+{
+  "name": "myblog-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "cd ../.. && eslint packages/myblog-frontend",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@myblog/shared": "file:../myblog-shared",
+    "@tanstack/react-query": "^5.90.21",
+    "@ts-rest/core": "^3.52.1",
+    "@ts-rest/react-query": "^3.52.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "zod": "^3.25.76"
+  }
+}
