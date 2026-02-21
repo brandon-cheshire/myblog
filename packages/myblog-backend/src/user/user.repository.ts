@@ -182,7 +182,7 @@ export class UserRepository {
     async updatePassword(id: string, passwordHash: string): Promise<void> {
         await this.update(id, {
             password_hash: passwordHash,
-            updatedAt: new Date().toISOString() as any,
+            updatedAt: new Date().toISOString(),
         });
     }
 
@@ -192,8 +192,8 @@ export class UserRepository {
     async updateVerificationCode(id: string, code: string, expiresAt: string): Promise<void> {
         await this.update(id, {
             verificationCode: code,
-            verificationCodeExpiresAt: expiresAt as any,
-            updatedAt: new Date().toISOString() as any,
+            verificationCodeExpiresAt: expiresAt,
+            updatedAt: new Date().toISOString(),
         });
     }
 
@@ -204,7 +204,7 @@ export class UserRepository {
         await this.update(id, {
             verificationCode: null,
             verificationCodeExpiresAt: null,
-            updatedAt: new Date().toISOString() as any,
+            updatedAt: new Date().toISOString(),
         });
     }
 
@@ -221,7 +221,7 @@ export class UserRepository {
     async updateUsername(id: string, username: string): Promise<void> {
         await this.update(id, { 
             username,
-            updatedAt: new Date().toISOString() as any,
+            updatedAt: new Date().toISOString(),
         });
     }
 
