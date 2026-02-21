@@ -7,17 +7,17 @@ declare global {
 }
 
 const dialect = new PostgresDialect({
-    pool: new Pool({
-        connectionString: process.env.DATABASE_URL,
-    }),
+  pool: new Pool({
+    connectionString: process.env.DATABASE_URL,
+  }),
 });
 
 const db = globalThis.db || new Kysely<Database>({
-    dialect,
+  dialect,
 });
 
 if (process.env.NODE_ENV !== 'production') {
-    globalThis.db = db;
+  globalThis.db = db;
 }
 
 export { db };

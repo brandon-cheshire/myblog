@@ -1,6 +1,6 @@
-import { type ReactNode, useEffect, useRef } from 'react'
-import { useLocation } from 'react-router-dom'
-import { Banner } from './Banner'
+import { type ReactNode, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Banner } from './Banner';
 
 interface MainLayoutProps {
   children: ReactNode
@@ -9,15 +9,15 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ children, title, subtitle }: MainLayoutProps) {
-  const mainContentRef = useRef<HTMLElement>(null)
-  const { pathname } = useLocation()
+  const mainContentRef = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     // Reset scroll position when route changes
     if (mainContentRef.current) {
-      mainContentRef.current.scrollTop = 0
+      mainContentRef.current.scrollTop = 0;
     }
-  }, [pathname])
+  }, [pathname]);
 
   return (
     <div className="dashboard-layout">
@@ -36,5 +36,5 @@ export function MainLayout({ children, title, subtitle }: MainLayoutProps) {
         </div>
       </main>
     </div>
-  )
+  );
 }

@@ -48,7 +48,7 @@ function createPinoHttpMiddleware(logger: pino.Logger) {
 
 function createRequestLogMiddleware(
   logger: pino.Logger,
-  enabled: boolean
+  enabled: boolean,
 ): (req: Request, res: Response, next: NextFunction) => void {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!enabled) {
@@ -64,7 +64,7 @@ function createRequestLogMiddleware(
       const responseTime = Date.now() - start;
       logger.info(
         { reqId, method, url, statusCode, responseTime },
-        `${method} ${url} ${statusCode}`
+        `${method} ${url} ${statusCode}`,
       );
     });
     next();

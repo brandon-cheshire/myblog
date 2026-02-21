@@ -1,12 +1,12 @@
-import { usePosts } from '../hooks/usePosts'
-import { ComposePostPrompt } from '../components/ComposePostPrompt'
-import { ComposePost } from '../components/ComposePost'
-import { PostItem } from '../components/PostItem'
-import { usePostOperations } from '../hooks/usePostOperations'
-import '../components/ComposePostPrompt.css'
+import { usePosts } from '../hooks/usePosts';
+import { ComposePostPrompt } from '../components/ComposePostPrompt';
+import { ComposePost } from '../components/ComposePost';
+import { PostItem } from '../components/PostItem';
+import { usePostOperations } from '../hooks/usePostOperations';
+import '../components/ComposePostPrompt.css';
 
 export function PostList() {
-  const { posts, loading, error, fetchPosts } = usePosts()
+  const { posts, loading, error, fetchPosts } = usePosts();
   const {
     isOverlayOpen,
     editingPostId,
@@ -16,11 +16,11 @@ export function PostList() {
     handleOverlayClick,
     handleUnsavedChangesChange,
     handlePostSaved,
-  } = usePostOperations({ onPostSaved: fetchPosts })
+  } = usePostOperations({ onPostSaved: fetchPosts });
 
   const onDelete = (postId: string) => {
-    handleDelete(postId, fetchPosts)
-  }
+    handleDelete(postId, fetchPosts);
+  };
 
   return (
     <div className="card">
@@ -77,5 +77,5 @@ export function PostList() {
         </div>
       )}
     </div>
-  )
+  );
 }

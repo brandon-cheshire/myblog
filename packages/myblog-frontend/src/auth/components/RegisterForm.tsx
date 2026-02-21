@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import type { FormEvent } from 'react'
-import { useAuth } from '../context/AuthContext'
+import { useState } from 'react';
+import type { FormEvent } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void
@@ -8,31 +8,31 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterFormProps) {
-  const { register } = useAuth()
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { register } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
     
     try {
-      await register(name, email, password)
-      setName('')
-      setEmail('')
-      setPassword('')
-      onSwitchToLogin()
-      onSetupTwoFactor()
+      await register(name, email, password);
+      setName('');
+      setEmail('');
+      setPassword('');
+      onSwitchToLogin();
+      onSetupTwoFactor();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to register')
+      setError(err instanceof Error ? err.message : 'Failed to register');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div>
@@ -52,7 +52,7 @@ export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterForm
               padding: '8px',
               border: '1px solid #ddd',
               borderRadius: '4px',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
             }}
           />
         </div>
@@ -70,7 +70,7 @@ export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterForm
               padding: '8px',
               border: '1px solid #ddd',
               borderRadius: '4px',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
             }}
           />
         </div>
@@ -88,7 +88,7 @@ export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterForm
               padding: '8px',
               border: '1px solid #ddd',
               borderRadius: '4px',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
             }}
           />
         </div>
@@ -110,7 +110,7 @@ export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterForm
             cursor: loading ? 'not-allowed' : 'pointer',
             fontSize: '16px',
             fontWeight: 'bold',
-            opacity: loading ? 0.6 : 1
+            opacity: loading ? 0.6 : 1,
           }}
         >
           {loading ? 'Loading...' : 'Register'}
@@ -126,13 +126,13 @@ export function RegisterForm({ onSwitchToLogin, onSetupTwoFactor }: RegisterForm
             border: 'none',
             color: '#646cff',
             cursor: 'pointer',
-            textDecoration: 'underline'
+            textDecoration: 'underline',
           }}
         >
           Login
         </button>
       </p>
     </div>
-  )
+  );
 }
 

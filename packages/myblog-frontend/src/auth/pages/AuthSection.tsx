@@ -1,41 +1,41 @@
-import { useState } from 'react'
-import { LoginForm } from '../components/LoginForm'
-import { RegisterForm } from '../components/RegisterForm'
-import { TwoFactorAuthForm } from '../components/TwoFactorAuthForm'
-import { TwoFactorSetup } from '../components/TwoFactorSetup'
-import { useAuth } from '../context/AuthContext'
+import { useState } from 'react';
+import { LoginForm } from '../components/LoginForm';
+import { RegisterForm } from '../components/RegisterForm';
+import { TwoFactorAuthForm } from '../components/TwoFactorAuthForm';
+import { TwoFactorSetup } from '../components/TwoFactorSetup';
+import { useAuth } from '../context/AuthContext';
 
 export function AuthSection() {
-  const [mode, setMode] = useState<'login' | 'register' | 'setup2fa'>('login')
-  const { requiresTwoFactor, setRequiresTwoFactor, setTempCredentials } = useAuth()
+  const [mode, setMode] = useState<'login' | 'register' | 'setup2fa'>('login');
+  const { requiresTwoFactor, setRequiresTwoFactor, setTempCredentials } = useAuth();
 
   const handleSwitchToRegister = () => {
-    setMode('register')
-  }
+    setMode('register');
+  };
 
   const handleSwitchToLogin = () => {
-    setMode('login')
-  }
+    setMode('login');
+  };
 
   const handleCancelTwoFactor = () => {
-    setRequiresTwoFactor(false)
-    setTempCredentials(null)
-  }
+    setRequiresTwoFactor(false);
+    setTempCredentials(null);
+  };
 
   const handleSetupTwoFactor = () => {
-    setMode('setup2fa')
-  }
+    setMode('setup2fa');
+  };
 
   const handleSetupComplete = () => {
-    setMode('login')
-  }
+    setMode('login');
+  };
 
   if (requiresTwoFactor) {
     return (
       <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
         <TwoFactorAuthForm onCancel={handleCancelTwoFactor} />
       </div>
-    )
+    );
   }
 
   return (
@@ -58,5 +58,5 @@ export function AuthSection() {
         />
       )}
     </div>
-  )
+  );
 }

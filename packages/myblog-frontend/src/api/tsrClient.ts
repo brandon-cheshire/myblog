@@ -11,9 +11,9 @@ const useProxy = import.meta.env.DEV && !import.meta.env.VITE_API_URL;
 const baseUrl = useProxy
   ? '/api'
   : (() => {
-      const origin = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      return origin.endsWith('/api') ? origin : `${origin.replace(/\/$/, '')}/api`;
-    })();
+    const origin = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    return origin.endsWith('/api') ? origin : `${origin.replace(/\/$/, '')}/api`;
+  })();
 
 // Single React Query client with Bearer token (used for auth, users, posts)
 export const tsrClient = initTsrReactQuery(contract, {
@@ -64,7 +64,9 @@ export const api = {
       method: 'POST',
       headers: token ? { authorization: `Bearer ${token}` } : {},
     });
-    if (!response.ok) throw new Error('Failed to generate 2FA QR code');
+    if (!response.ok) {
+      throw new Error('Failed to generate 2FA QR code');
+    }
     return await response.blob();
   },
 };

@@ -20,6 +20,8 @@ export function generateVerificationCodeExpiry(): Date {
  * Check if verification code is expired
  */
 export function isVerificationCodeExpired(expiresAt: Date | null): boolean {
-  if (!expiresAt) return true;
+  if (!expiresAt) {
+    return true;
+  }
   return new Date() > expiresAt;
 }

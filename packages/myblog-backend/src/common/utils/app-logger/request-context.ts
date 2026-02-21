@@ -14,7 +14,7 @@ export function getRequestContext(): RequestContextStore | undefined {
 export function requestContextMiddleware(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
   const correlationId = (req as Request & { id?: string }).id ?? crypto.randomUUID();
   requestContext.run({ correlationId }, () => next());

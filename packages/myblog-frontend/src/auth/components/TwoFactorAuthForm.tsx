@@ -1,31 +1,31 @@
-import { useState } from 'react'
-import type { FormEvent } from 'react'
-import { useAuth } from '../context/AuthContext'
+import { useState } from 'react';
+import type { FormEvent } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 interface TwoFactorAuthFormProps {
   onCancel: () => void
 }
 
 export function TwoFactorAuthForm({ onCancel }: TwoFactorAuthFormProps) {
-  const { authenticateTwoFactor } = useAuth()
-  const [code, setCode] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { authenticateTwoFactor } = useAuth();
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
     
     try {
-      await authenticateTwoFactor(code)
-      setCode('')
+      await authenticateTwoFactor(code);
+      setCode('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid 2FA code')
+      setError(err instanceof Error ? err.message : 'Invalid 2FA code');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div>
@@ -51,7 +51,7 @@ export function TwoFactorAuthForm({ onCancel }: TwoFactorAuthFormProps) {
               boxSizing: 'border-box',
               fontSize: '18px',
               textAlign: 'center',
-              letterSpacing: '0.5em'
+              letterSpacing: '0.5em',
             }}
           />
         </div>
@@ -76,7 +76,7 @@ export function TwoFactorAuthForm({ onCancel }: TwoFactorAuthFormProps) {
               cursor: loading || code.length !== 6 ? 'not-allowed' : 'pointer',
               fontSize: '16px',
               fontWeight: 'bold',
-              opacity: loading || code.length !== 6 ? 0.6 : 1
+              opacity: loading || code.length !== 6 ? 0.6 : 1,
             }}
           >
             {loading ? 'Verifying...' : 'Verify'}
@@ -95,7 +95,7 @@ export function TwoFactorAuthForm({ onCancel }: TwoFactorAuthFormProps) {
               borderRadius: '4px',
               cursor: loading ? 'not-allowed' : 'pointer',
               fontSize: '16px',
-              opacity: loading ? 0.6 : 1
+              opacity: loading ? 0.6 : 1,
             }}
           >
             Cancel
@@ -103,6 +103,6 @@ export function TwoFactorAuthForm({ onCancel }: TwoFactorAuthFormProps) {
         </div>
       </form>
     </div>
-  )
+  );
 }
 

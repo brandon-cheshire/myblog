@@ -13,33 +13,33 @@ export type ValidationErrorBody = { error: string; details?: Array<{ field: stri
  * Use for 4xx/5xx that are not validation errors.
  */
 export function errorResponse<S extends 400 | 401 | 403 | 404 | 409 | 500>(
-    status: S,
-    message: string
+  status: S,
+  message: string,
 ): { status: S; body: ErrorBody } {
-    return { status, body: { error: message } };
+  return { status, body: { error: message } };
 }
 
 /**
  * Return a ts-rest 400 validation error response with optional details.
  */
 export function validationErrorResponse(
-    message: string,
-    details?: Array<{ field: string; message: string }>
+  message: string,
+  details?: Array<{ field: string; message: string }>,
 ): { status: 400; body: ValidationErrorBody } {
-    return { status: 400 as const, body: details ? { error: message, details } : { error: message } };
+  return { status: 400 as const, body: details ? { error: message, details } : { error: message } };
 }
 
 /**
  * Map a ZodError to the standard validation response shape.
  */
 export function zodErrorResponse(
-    error: z.ZodError,
-    defaultMessage = 'Validation failed'
+  error: z.ZodError,
+  defaultMessage = 'Validation failed',
 ): { status: 400; body: ValidationErrorBody } {
-    return validationErrorResponse(defaultMessage, error.errors.map((e) => ({
-        field: e.path.join('.'),
-        message: e.message,
-    })));
+  return validationErrorResponse(defaultMessage, error.errors.map((e) => ({
+    field: e.path.join('.'),
+    message: e.message,
+  })));
 }
 
 /**
@@ -49,24 +49,24 @@ export function zodErrorResponse(
  * - Otherwise → log and return 500 with generic message (no stack/PII in body).
  */
 export function handleControllerError(
-    error: unknown,
-    options?: { logger?: AppLogger; context?: string; validationMessage?: string }
+  error: unknown,
+  options?: { logger?: AppLogger; context?: string; validationMessage?: string },
 ): { status: 400 | 401 | 403 | 404 | 409 | 500; body: ErrorBody | ValidationErrorBody } {
-    const { logger, context = 'handler', validationMessage = 'Validation failed' } = options ?? {};
+  const { logger, context = 'handler', validationMessage = 'Validation failed' } = options ?? {};
 
-    if (error instanceof HttpException) {
-        if (logger && error.status >= 500) {
-            logger.error({ message: `${context}: ${error.message}`, error }, { status: error.status });
-        }
-        return errorResponse(error.status as 400 | 401 | 403 | 404 | 409 | 500, error.message);
+  if (error instanceof HttpException) {
+    if (logger && error.status >= 500) {
+      logger.error({ message: `${context}: ${error.message}`, error }, { status: error.status });
     }
+    return errorResponse(error.status as 400 | 401 | 403 | 404 | 409 | 500, error.message);
+  }
 
-    if (error instanceof z.ZodError) {
-        return zodErrorResponse(error, validationMessage);
-    }
+  if (error instanceof z.ZodError) {
+    return zodErrorResponse(error, validationMessage);
+  }
 
-    if (logger) {
-        logger.error({ message: context, error });
-    }
-    return errorResponse(500, 'Something went wrong');
+  if (logger) {
+    logger.error({ message: context, error });
+  }
+  return errorResponse(500, 'Something went wrong');
 }

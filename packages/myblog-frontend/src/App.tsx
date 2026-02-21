@@ -1,18 +1,18 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import './App.css'
-import { AuthSection } from './auth/pages/AuthSection'
-import { useAuth } from './auth/context/AuthContext'
-import { PostList } from './posts/pages/PostList'
-import { MainLayout } from './common/components/MainLayout'
-import { Settings } from './users/pages/Settings'
-import { Profile } from './users/pages/Profile'
-import { ScrollToTop } from './common/components/ScrollToTop'      
+import { Routes, Route, Navigate } from 'react-router-dom';
+import './App.css';
+import { AuthSection } from './auth/pages/AuthSection';
+import { useAuth } from './auth/context/AuthContext';
+import { PostList } from './posts/pages/PostList';
+import { MainLayout } from './common/components/MainLayout';
+import { Settings } from './users/pages/Settings';
+import { Profile } from './users/pages/Profile';
+import { ScrollToTop } from './common/components/ScrollToTop';      
 
 function App() {
-  const { user, loading } = useAuth()
+  const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="loading">Loading...</div>
+    return <div className="loading">Loading...</div>;
   }
 
   return (
@@ -70,7 +70,7 @@ function App() {
         />
       </Routes>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

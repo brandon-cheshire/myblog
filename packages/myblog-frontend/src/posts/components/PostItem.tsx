@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from '../../auth/context/AuthContext'
-import type { Post } from '../../api/tsrClient'
+import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../auth/context/AuthContext';
+import type { Post } from '../../api/tsrClient';
 
 interface PostItemProps {
   post: Post
@@ -11,43 +11,43 @@ interface PostItemProps {
 }
 
 export function PostItem({ post, onEdit, onDelete, showAuthor = true }: PostItemProps) {
-  const { user } = useAuth()
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
-  const dropdownRef = useRef<HTMLDivElement | null>(null)
+  const { user } = useAuth();
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  const isOwnPost = user?.id && post.author?._id && user.id === post.author._id
-  const isDropdownOpen = openDropdownId === post._id
-  const postDate = new Date(post.createdAt).toLocaleString()
+  const isOwnPost = user?.id && post.author?._id && user.id === post.author._id;
+  const isDropdownOpen = openDropdownId === post._id;
+  const postDate = new Date(post.createdAt).toLocaleString();
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (openDropdownId === post._id && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setOpenDropdownId(null)
+        setOpenDropdownId(null);
       }
-    }
+    };
 
     if (openDropdownId === post._id) {
-      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('mousedown', handleClickOutside);
       return () => {
-        document.removeEventListener('mousedown', handleClickOutside)
-      }
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
     }
-  }, [openDropdownId, post._id])
+  }, [openDropdownId, post._id]);
 
   const toggleDropdown = () => {
-    setOpenDropdownId(isDropdownOpen ? null : post._id)
-  }
+    setOpenDropdownId(isDropdownOpen ? null : post._id);
+  };
 
   const handleEdit = () => {
-    setOpenDropdownId(null)
-    onEdit(post._id)
-  }
+    setOpenDropdownId(null);
+    onEdit(post._id);
+  };
 
   const handleDelete = () => {
-    setOpenDropdownId(null)
-    onDelete(post._id)
-  }
+    setOpenDropdownId(null);
+    onDelete(post._id);
+  };
 
   return (
     <div className="post-item">
@@ -99,7 +99,7 @@ export function PostItem({ post, onEdit, onDelete, showAuthor = true }: PostItem
                 gap: '0.75rem',
                 textDecoration: 'none',
                 color: 'inherit',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
               <div style={{
@@ -111,13 +111,13 @@ export function PostItem({ post, onEdit, onDelete, showAuthor = true }: PostItem
                 flexShrink: 0,
                 boxShadow: '0 2px 4px var(--shadow)',
                 cursor: 'pointer',
-                transition: 'transform 0.2s ease'
+                transition: 'transform 0.2s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.1)'
+                e.currentTarget.style.transform = 'scale(1.1)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.transform = 'scale(1)';
               }}
               >
                 {post.author?.profilePicture ? (
@@ -130,7 +130,7 @@ export function PostItem({ post, onEdit, onDelete, showAuthor = true }: PostItem
                       target.style.display = 'none';
                       const parent = target.parentElement;
                       if (parent) {
-                        parent.innerHTML = `<div style="width: 100%; height: 100%; background-color: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 1rem;">👤</div>`;
+                        parent.innerHTML = '<div style="width: 100%; height: 100%; background-color: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 1rem;">👤</div>';
                       }
                     }}
                   />
@@ -142,7 +142,7 @@ export function PostItem({ post, onEdit, onDelete, showAuthor = true }: PostItem
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '1rem'
+                    fontSize: '1rem',
                   }}>
                     👤
                   </div>
@@ -165,7 +165,7 @@ export function PostItem({ post, onEdit, onDelete, showAuthor = true }: PostItem
                   overflow: 'hidden',
                   border: '2px solid var(--border-color)',
                   flexShrink: 0,
-                  boxShadow: '0 2px 4px var(--shadow)'
+                  boxShadow: '0 2px 4px var(--shadow)',
                 }}>
                   <div style={{
                     width: '100%',
@@ -174,7 +174,7 @@ export function PostItem({ post, onEdit, onDelete, showAuthor = true }: PostItem
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '1rem'
+                    fontSize: '1rem',
                   }}>
                     👤
                   </div>
@@ -188,5 +188,5 @@ export function PostItem({ post, onEdit, onDelete, showAuthor = true }: PostItem
       </p>
       <p className="post-content">{post.content}</p>
     </div>
-  )
+  );
 }

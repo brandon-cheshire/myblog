@@ -2,21 +2,28 @@ import { ZodError } from 'zod';
 import type { ErrorMessageType } from './app-logger/error-message.type';
 
 export function serializeError(details: unknown): string {
-  if (details == null) return 'Unknown Error';
-  if (details instanceof Error) return details.message;
+  if (details == null) {
+    return 'Unknown Error';
+  }
+  if (details instanceof Error) {
+    return details.message;
+  }
   if (
     typeof details === 'object' &&
     'message' in details &&
     typeof (details as { message: unknown }).message === 'string'
-  )
+  ) {
     return (details as { message: string }).message;
-  if (typeof details === 'object') return JSON.stringify(details);
+  }
+  if (typeof details === 'object') {
+    return JSON.stringify(details);
+  }
   return String(details);
 }
 
 export function parseErrorDetails(
   details: ErrorMessageType,
-  messagePrefix: string
+  messagePrefix: string,
 ): { message: string; error: Error | undefined } {
   let message = '';
   let error: Error | undefined;
@@ -36,7 +43,9 @@ export function parseErrorDetails(
   if ('message' in details && typeof details.message === 'string' && details.message) {
     message = message ? details.message + ' - ' + message : details.message;
   }
-  if (!message) message = 'Unknown Error';
+  if (!message) {
+    message = 'Unknown Error';
+  }
 
   return {
     message: (messagePrefix ? messagePrefix + ': ' : '') + message,

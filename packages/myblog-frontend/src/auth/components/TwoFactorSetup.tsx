@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import type { FormEvent } from 'react'
-import { api, tsrClient } from '../../api/tsrClient'
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
+import { api, tsrClient } from '../../api/tsrClient';
 
 interface TwoFactorSetupProps {
   onComplete: () => void
@@ -8,52 +8,52 @@ interface TwoFactorSetupProps {
 }
 
 export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
-  const [code, setCode] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [step, setStep] = useState<'generate' | 'verify'>('generate')
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<'generate' | 'verify'>('generate');
 
   const turnOnTwoFactorMutation = tsrClient.auth.turnOnTwoFactor.useMutation({
     onSuccess: () => onComplete(),
-  })
+  });
 
   useEffect(() => {
     const generateQR = async () => {
       try {
-        setLoading(true)
-        const qrBlob = await api.generateTwoFactorQR()
-        const url = URL.createObjectURL(qrBlob)
-        setQrCodeUrl(url)
+        setLoading(true);
+        const qrBlob = await api.generateTwoFactorQR();
+        const url = URL.createObjectURL(qrBlob);
+        setQrCodeUrl(url);
       } catch {
-        setError('Failed to generate QR code')
+        setError('Failed to generate QR code');
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    generateQR()
-  }, [])
+    generateQR();
+  }, []);
 
   const handleVerify = async (e: FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
       await turnOnTwoFactorMutation.mutateAsync({
         body: { twoFactorAuthenticationCode: code },
-      })
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid verification code')
+      setError(err instanceof Error ? err.message : 'Invalid verification code');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleNext = () => {
-    setStep('verify')
-  }
+    setStep('verify');
+  };
 
   return (
     <div>
@@ -98,7 +98,7 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
                 borderRadius: '4px',
                 cursor: !qrCodeUrl || loading ? 'not-allowed' : 'pointer',
                 fontSize: '16px',
-                opacity: !qrCodeUrl || loading ? 0.6 : 1
+                opacity: !qrCodeUrl || loading ? 0.6 : 1,
               }}
             >
               Next
@@ -114,7 +114,7 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
                 border: '1px solid #ddd',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontSize: '16px'
+                fontSize: '16px',
               }}
             >
               Cancel
@@ -146,7 +146,7 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
                   boxSizing: 'border-box',
                   fontSize: '18px',
                   textAlign: 'center',
-                  letterSpacing: '0.5em'
+                  letterSpacing: '0.5em',
                 }}
               />
             </div>
@@ -171,7 +171,7 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
                   cursor: loading || code.length !== 6 ? 'not-allowed' : 'pointer',
                   fontSize: '16px',
                   fontWeight: 'bold',
-                  opacity: loading || code.length !== 6 ? 0.6 : 1
+                  opacity: loading || code.length !== 6 ? 0.6 : 1,
                 }}
               >
                 {(loading || turnOnTwoFactorMutation.isPending) ? 'Enabling...' : 'Enable 2FA'}
@@ -190,7 +190,7 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
                   borderRadius: '4px',
                   cursor: loading ? 'not-allowed' : 'pointer',
                   fontSize: '16px',
-                  opacity: loading ? 0.6 : 1
+                  opacity: loading ? 0.6 : 1,
                 }}
               >
                 Back
@@ -200,6 +200,6 @@ export function TwoFactorSetup({ onComplete, onCancel }: TwoFactorSetupProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
 

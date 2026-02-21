@@ -30,4 +30,19 @@ export default defineConfig([
   ...tseslint.configs.recommended.map((c) => ({ ...c, files: frontendFiles })),
   { ...reactHooks.configs['recommended-latest'], files: frontendFiles },
   { ...reactRefresh.configs.vite, files: frontendFiles },
+  {
+    files: [...backendFiles, ...frontendFiles],
+    rules: {
+      curly: ['error', 'all'],
+      'brace-style': ['error', '1tbs', { allowSingleLine: false }],
+      quotes: ['error', 'single'],
+      semi: ['error', 'always'],
+      'comma-dangle': ['error', 'always-multiline'],
+      indent: ['error', 2],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+    },
+  },
 ])

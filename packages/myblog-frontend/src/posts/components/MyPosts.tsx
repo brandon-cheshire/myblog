@@ -1,32 +1,32 @@
-import { useState } from 'react'
-import { useAuth } from '../../auth/context/AuthContext'
-import { usePostsContext } from '../context/PostsContext'
-import { ComposePost } from './ComposePost'
-import { PostItem } from './PostItem'
-import { usePostOperations } from '../hooks/usePostOperations'
-import { tsrClient } from '../../api/tsrClient'
-import type { Post } from '../../api/tsrClient'
-import './ComposePostPrompt.css'
+import { useState } from 'react';
+import { useAuth } from '../../auth/context/AuthContext';
+import { usePostsContext } from '../context/PostsContext';
+import { ComposePost } from './ComposePost';
+import { PostItem } from './PostItem';
+import { usePostOperations } from '../hooks/usePostOperations';
+import { tsrClient } from '../../api/tsrClient';
+import type { Post } from '../../api/tsrClient';
+import './ComposePostPrompt.css';
 
 interface MyPostsProps {
   userId?: string
 }
 
 export function MyPosts({ userId }: MyPostsProps) {
-  const { user: currentUser } = useAuth()
-  const { allPostsRefreshKey, getUserPostsRefreshKey } = usePostsContext()
+  const { user: currentUser } = useAuth();
+  const { allPostsRefreshKey, getUserPostsRefreshKey } = usePostsContext();
 
-  const targetUserId = userId || currentUser?.id
-  const userPostsRefreshKey = targetUserId ? getUserPostsRefreshKey(targetUserId) : 0
+  const targetUserId = userId || currentUser?.id;
+  const userPostsRefreshKey = targetUserId ? getUserPostsRefreshKey(targetUserId) : 0;
 
   const postsQuery = tsrClient.users.getUserPosts.useQuery({
     queryKey: ['user-posts', targetUserId ?? '', allPostsRefreshKey, userPostsRefreshKey],
     queryData: targetUserId ? { params: { id: targetUserId } } : ({} as { params: { id: string } }),
     enabled: !!targetUserId,
     staleTime: 30_000,
-  })
+  });
 
-  const [isNewPost, setIsNewPost] = useState(false)
+  const [isNewPost, setIsNewPost] = useState(false);
 
   const {
     isOverlayOpen,
@@ -39,45 +39,51 @@ export function MyPosts({ userId }: MyPostsProps) {
     handlePostSaved,
   } = usePostOperations({
     onPostSaved: () => postsQuery.refetch(),
-  })
+  });
 
-  const posts = (postsQuery.data?.body ?? []) as Post[]
-  const loading = postsQuery.isLoading
-  const error = postsQuery.error ? (postsQuery.error as Error).message : null
-  const isOwnProfile = !userId || userId === currentUser?.id
+  const posts = (postsQuery.data?.body ?? []) as Post[];
+  const loading = postsQuery.isLoading;
+  const error = postsQuery.error ? (postsQuery.error as Error).message : null;
+  const isOwnProfile = !userId || userId === currentUser?.id;
 
   const onEdit = (postId: string) => {
     if (postId) {
-      setIsNewPost(false)
-      handleEdit(postId)
+      setIsNewPost(false);
+      handleEdit(postId);
     }
-  }
+  };
 
   const onDelete = (postId: string) => {
-    handleDelete(postId, () => postsQuery.refetch())
-  }
+    handleDelete(postId, () => postsQuery.refetch());
+  };
 
   const handleNewPost = () => {
-    setIsNewPost(true)
-    handleNewPostFromHook()
-  }
+    setIsNewPost(true);
+    handleNewPostFromHook();
+  };
 
   const handleCloseOverlayWithNewPost = () => {
-    setIsNewPost(false)
-    handleCloseOverlay()
-  }
+    setIsNewPost(false);
+    handleCloseOverlay();
+  };
 
   const handleOverlayClickWithNewPost = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) handleCloseOverlayWithNewPost()
-  }
+    if (e.target === e.currentTarget) {
+      handleCloseOverlayWithNewPost();
+    }
+  };
 
   const handlePostSavedWithNewPost = () => {
-    setIsNewPost(false)
-    handlePostSaved()
-  }
+    setIsNewPost(false);
+    handlePostSaved();
+  };
 
-  if (loading) return <div className="loading">Loading posts...</div>
-  if (error) return <div className="error">Error: {error}</div>
+  if (loading) {
+    return <div className="loading">Loading posts...</div>;
+  }
+  if (error) {
+    return <div className="error">Error: {error}</div>;
+  }
 
   return (
     <div className="my-posts">
@@ -85,8 +91,8 @@ export function MyPosts({ userId }: MyPostsProps) {
         <div className="empty-state">
           <p>
             {isOwnProfile
-              ? "You haven't created any posts yet."
-              : "This user hasn't created any posts yet."}
+              ? 'You haven\'t created any posts yet.'
+              : 'This user hasn\'t created any posts yet.'}
           </p>
           {isOwnProfile && (
             <button onClick={handleNewPost} className="primary-btn">
@@ -134,5 +140,5 @@ export function MyPosts({ userId }: MyPostsProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

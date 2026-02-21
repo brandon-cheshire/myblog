@@ -1,4 +1,4 @@
-import { ColumnType, Generated, Selectable, Insertable, Updateable } from 'kysely';
+import { ColumnType, Generated, Selectable } from 'kysely';
 import { UserStatusType } from '@myblog/shared';
 
 export interface Database {

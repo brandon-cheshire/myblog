@@ -5,27 +5,27 @@ import { AppLogger } from '../common/utils/app-logger/app-logger';
 const logger = new AppLogger('ErrorMiddleware');
 
 function errorMiddleware(
-    error: HttpException | Error,
-    _request: Request,
-    response: Response,
-    _next: NextFunction
+  error: HttpException | Error,
+  _request: Request,
+  response: Response,
+  _next: NextFunction,
 ) {
-    if (response.headersSent) {
-        return;
-    }
+  if (response.headersSent) {
+    return;
+  }
 
-    if (error.message === 'STREAMING_RESPONSE_SENT') {
-        return;
-    }
+  if (error.message === 'STREAMING_RESPONSE_SENT') {
+    return;
+  }
 
-    logger.error({ error });
+  logger.error({ error });
 
-    const status = error instanceof HttpException ? error.status : 500;
-    const message = error.message || 'Something went wrong';
-    response.status(status).send({
-        status,
-        message,
-    });
+  const status = error instanceof HttpException ? error.status : 500;
+  const message = error.message || 'Something went wrong';
+  response.status(status).send({
+    status,
+    message,
+  });
 }
 
 export { errorMiddleware };

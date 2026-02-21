@@ -1,32 +1,32 @@
-import { useState, type FormEvent } from 'react'
-import { useAuth } from '../context/AuthContext'
+import { useState, type FormEvent } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void
 }
 
 export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
-  const { login } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
     
     try {
-      await login(email, password)
-      setEmail('')
-      setPassword('')
+      await login(email, password);
+      setEmail('');
+      setPassword('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to login')
+      setError(err instanceof Error ? err.message : 'Failed to login');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div>
@@ -46,7 +46,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
               padding: '8px',
               border: '1px solid #ddd',
               borderRadius: '4px',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
             }}
           />
         </div>
@@ -64,7 +64,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
               padding: '8px',
               border: '1px solid #ddd',
               borderRadius: '4px',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
             }}
           />
         </div>
@@ -86,7 +86,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             cursor: loading ? 'not-allowed' : 'pointer',
             fontSize: '16px',
             fontWeight: 'bold',
-            opacity: loading ? 0.6 : 1
+            opacity: loading ? 0.6 : 1,
           }}
         >
           {loading ? 'Loading...' : 'Login'}
@@ -101,13 +101,13 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
             border: 'none',
             color: '#646cff',
             cursor: 'pointer',
-            textDecoration: 'underline'
+            textDecoration: 'underline',
           }}
         >
           Register
         </button>
       </p>
     </div>
-  )
+  );
 }
 

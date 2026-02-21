@@ -1,7 +1,1 @@
-{
-    "semi": true,
-    "singleQuote": true,
-    "tabWidth": 4,
-    "trailingComma": "es5",
-    "plugins": ["prettier-plugin-packagejson"]
-}
+{"semi":true,"singleQuote":true,"tabWidth":2,"trailingComma":"es5","plugins":["prettier-plugin-packagejson"]}

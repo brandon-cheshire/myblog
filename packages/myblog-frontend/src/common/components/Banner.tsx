@@ -1,86 +1,86 @@
-import './Banner.css'
-import { useAuth } from '../../auth/context/AuthContext'
-import { useTheme } from '../context/ThemeContext'
-import { useState, useRef, useEffect } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
+import './Banner.css';
+import { useAuth } from '../../auth/context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 export function Banner() {
-  const { user, logout } = useAuth()
-  const { theme, toggleTheme } = useTheme()
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+  const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isNavDropdownOpen, setIsNavDropdownOpen] = useState(() => {
     // Restore state from localStorage on mount
-    const saved = localStorage.getItem('navDropdownOpen')
-    return saved === 'true'
-  })
-  const profileDropdownRef = useRef<HTMLDivElement>(null)
-  const navDropdownRef = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
-  const location = useLocation()
+    const saved = localStorage.getItem('navDropdownOpen');
+    return saved === 'true';
+  });
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const navDropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Close profile dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
-        setIsProfileDropdownOpen(false)
+        setIsProfileDropdownOpen(false);
       }
-    }
+    };
 
     if (isProfileDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isProfileDropdownOpen])
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileDropdownOpen]);
 
   // Persist nav dropdown state to localStorage
   useEffect(() => {
-    localStorage.setItem('navDropdownOpen', String(isNavDropdownOpen))
-  }, [isNavDropdownOpen])
+    localStorage.setItem('navDropdownOpen', String(isNavDropdownOpen));
+  }, [isNavDropdownOpen]);
 
   // Add/remove class to body when nav dropdown is open
   useEffect(() => {
     if (isNavDropdownOpen) {
-      document.body.classList.add('nav-dropdown-open')
+      document.body.classList.add('nav-dropdown-open');
     } else {
-      document.body.classList.remove('nav-dropdown-open')
+      document.body.classList.remove('nav-dropdown-open');
     }
 
     return () => {
-      document.body.classList.remove('nav-dropdown-open')
-    }
-  }, [isNavDropdownOpen])
+      document.body.classList.remove('nav-dropdown-open');
+    };
+  }, [isNavDropdownOpen]);
 
   const handleProfileClick = () => {
-    setIsProfileDropdownOpen(!isProfileDropdownOpen)
-  }
+    setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  };
 
   const handleHamburgerClick = () => {
-    setIsNavDropdownOpen(!isNavDropdownOpen)
-    setIsProfileDropdownOpen(false)
-  }
+    setIsNavDropdownOpen(!isNavDropdownOpen);
+    setIsProfileDropdownOpen(false);
+  };
 
   const handleSettingsClick = () => {
-    navigate('/settings')
-    setIsProfileDropdownOpen(false)
-  }
+    navigate('/settings');
+    setIsProfileDropdownOpen(false);
+  };
 
   const handleLogoutClick = async () => {
-    await logout()
-    setIsProfileDropdownOpen(false)
-  }
+    await logout();
+    setIsProfileDropdownOpen(false);
+  };
 
   const handleLogoClick = () => {
     if (location.pathname !== '/') {
-      navigate('/')
+      navigate('/');
     }
-  }
+  };
 
   const isNavLinkActive = (path: string) => {
-    return location.pathname === path
-  }
+    return location.pathname === path;
+  };
 
   return (
     <header className="site-banner">
@@ -124,8 +124,8 @@ export function Banner() {
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                handleLogoClick()
+                e.preventDefault();
+                handleLogoClick();
               }
             }}
           >
@@ -145,8 +145,8 @@ export function Banner() {
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  handleProfileClick()
+                  e.preventDefault();
+                  handleProfileClick();
                 }
               }}
             >
@@ -183,7 +183,7 @@ export function Banner() {
                 <button
                   className="dropdown-item"
                   onClick={() => {
-                    toggleTheme()
+                    toggleTheme();
                   }}
                 >
                   {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
@@ -200,5 +200,5 @@ export function Banner() {
         )}
       </div>
     </header>
-  )
+  );
 }
