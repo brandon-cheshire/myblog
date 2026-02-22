@@ -1,4 +1,4 @@
-import { ColumnType, Generated, Selectable } from 'kysely';
+import { ColumnType, Generated } from 'kysely';
 import { UserStatusType } from '@myblog/shared';
 
 export interface Database {
@@ -34,6 +34,3 @@ export interface PostTable {
   createdAt: ColumnType<Date, string | undefined, never>;
   updatedAt: ColumnType<Date, string | undefined, string>;
 }
-
-// Selectable types (what we get from SELECT queries)
-export type User = Selectable<UserTable>;

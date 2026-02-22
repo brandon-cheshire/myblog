@@ -25,7 +25,7 @@ export function errorResponse<S extends 400 | 401 | 403 | 404 | 409 | 500>(
 /**
  * Return a ts-rest 400 validation error response with optional details.
  */
-export function validationErrorResponse(
+function validationErrorResponse(
   message: string,
   details?: Array<{ field: string; message: string }>
 ): { status: 400; body: ValidationErrorBody } {
@@ -38,7 +38,7 @@ export function validationErrorResponse(
 /**
  * Map a ZodError to the standard validation response shape.
  */
-export function zodErrorResponse(
+function zodErrorResponse(
   error: z.ZodError,
   defaultMessage = 'Validation failed'
 ): { status: 400; body: ValidationErrorBody } {

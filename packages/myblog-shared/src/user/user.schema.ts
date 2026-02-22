@@ -35,7 +35,7 @@ export const CreateUserDtoSchema = z.object({
   });
   
   export type CreateUserDto = z.infer<typeof CreateUserDtoSchema>;
-  
+
 // Comprehensive user schema with all fields
 export const UserSchema = z.object({
   id: z.string(),
@@ -56,16 +56,6 @@ export type User = z.infer<typeof UserSchema>;
 
 export type UserResponse = User;
 
-// Login schema
-export const userLoginSchema = z.object({
-  email: z.string().min(1, 'Email is required'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-export type UserLogin = z.infer<typeof userLoginSchema>;
-
-// Username update schema
 export const updateUsernameSchema = z.object({
   username: usernameSchema,
 });
-export type UpdateUsername = z.infer<typeof updateUsernameSchema>;

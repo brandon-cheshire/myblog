@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import pino from 'pino';
+import 'pino-pretty';
 import pinoHttp from 'pino-http';
 import { setRootLogger } from './root-logger';
 import { requestContextMiddleware } from './request-context';
