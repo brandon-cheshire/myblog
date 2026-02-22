@@ -11,7 +11,8 @@ database/
 │   ├── 001_add_user_status_and_verification.sql
 │   ├── 002_migrate_old_password_fields.sql
 │   ├── 003_make_updated_at_nullable.sql
-│   └── 004_add_username.sql
+│   ├── 004_add_username.sql
+│   └── 005_drop_addresses.sql
 ├── migrate.ts           # Migration runner script
 └── types.ts             # Database type definitions (Kysely)
 ```
@@ -27,8 +28,9 @@ Migration files are SQL scripts that modify the database schema. They are run in
 | `002_migrate_old_password_fields.sql`      | Add `password_hash`, migrate from old `password` column |
 | `003_make_updated_at_nullable.sql`         | Make `User.updatedAt` nullable                          |
 | `004_add_username.sql`                     | Add unique nullable `username` to `User`                |
+| `005_drop_addresses.sql`                   | Drop `addresses` table (address feature removed)        |
 
-Next migration should be named `005_descriptive_name.sql`.
+Next migration should be named `006_descriptive_name.sql`.
 
 ## Running Migrations
 

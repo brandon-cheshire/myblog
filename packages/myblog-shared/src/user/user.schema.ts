@@ -7,15 +7,6 @@ export const userStatusTypeSchema = z.enum([
 ]);
 export type UserStatusType = z.infer<typeof userStatusTypeSchema>;
 
-// Address schema for user addresses
-export const addressSchema = z.object({
-  street: z.string().min(1, 'Street is required'),
-  city: z.string().min(1, 'City is required'),
-  country: z.string().min(1, 'Country is required'),
-});
-
-export type Address = z.infer<typeof addressSchema>;
-
 // Username validation: 3-30 chars, alphanumeric, dots, hyphens, underscores
 export const usernameSchema = z
   .string()
@@ -46,7 +37,6 @@ export const UserSchema = z.object({
   verificationCodeExpiresAt: z.date().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
-  address: addressSchema.optional(),
 });
 
 export type User = z.infer<typeof UserSchema>;
@@ -61,7 +51,6 @@ export const userRegistrationSchema = z.object({
     message:
       'Password must be at least 10 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character',
   }),
-  address: addressSchema.optional(),
 });
 
 export type UserRegistration = z.infer<typeof userRegistrationSchema>;
@@ -75,12 +64,6 @@ export const userLoginSchema = z.object({
 export type UserLogin = z.infer<typeof userLoginSchema>;
 
 // API response shape (serialized, no sensitive fields)
-const addressResponseSchema = z.object({
-  street: z.string(),
-  city: z.string(),
-  country: z.string(),
-});
-
 export const userResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -89,7 +72,6 @@ export const userResponseSchema = z.object({
   profilePicture: z.string().optional(),
   createdAt: z.string().optional(),
   isTwoFactorEnabled: z.boolean().optional(),
-  address: addressResponseSchema.optional(),
 });
 
 export type UserResponse = z.infer<typeof userResponseSchema>;

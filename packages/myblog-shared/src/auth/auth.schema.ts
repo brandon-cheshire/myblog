@@ -16,13 +16,6 @@ export const registrationSchema = z.object({
     message:
       'Password must be at least 10 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character',
   }),
-  address: z
-    .object({
-      street: z.string(),
-      city: z.string(),
-      country: z.string(),
-    })
-    .optional(),
 });
 
 export type Register = z.infer<typeof registrationSchema>;

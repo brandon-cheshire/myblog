@@ -3,7 +3,6 @@ import { UserStatusType } from '@myblog/shared';
 
 export interface Database {
   User: UserTable;
-  addresses: AddressTable;
   posts: PostTable;
 }
 
@@ -27,14 +26,6 @@ export interface UserTable {
   updatedAt: ColumnType<Date, string | undefined, string | null> | null;
 }
 
-export interface AddressTable {
-  id: Generated<string>;
-  street: string;
-  city: string;
-  country: string;
-  userId: string;
-}
-
 export interface PostTable {
   id: Generated<string>;
   title: string;
@@ -45,6 +36,4 @@ export interface PostTable {
 }
 
 // Selectable types (what we get from SELECT queries)
-export type User = Selectable<UserTable> & {
-  address?: Selectable<AddressTable> | null;
-};
+export type User = Selectable<UserTable>;

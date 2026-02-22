@@ -1,6 +1,5 @@
 import * as path from 'path';
 import { UserRepository } from './user.repository';
-import { AddressRepository } from './address.repository';
 import { hashData } from '../common/utils/bcrypt';
 import { UniqueConstraintViolationException } from '../common/database.errors';
 import {
@@ -19,7 +18,6 @@ import {
 export class UserService {
   private readonly logger = new AppLogger(UserService.name);
   private userRepository = new UserRepository();
-  private addressRepository = new AddressRepository();
 
   private generateBaseUsername(name: string): string {
     let base = name
@@ -78,11 +76,6 @@ export class UserService {
     name: string;
     email: string;
     password: string;
-    address?: {
-      street: string;
-      city: string;
-      country: string;
-    };
   }): Promise<User> {
     const existingUser = await this.userRepository.findByEmail(userData.email);
     if (existingUser) {
@@ -101,23 +94,13 @@ export class UserService {
       username: username,
     });
 
-    let address = undefined;
-    if (userData.address) {
-      address = await this.addressRepository.create({
-        street: userData.address.street,
-        city: userData.address.city,
-        country: userData.address.country,
-        userId: newUser.id,
-      });
-    }
-
     this.logger.info('User created', { userId: newUser.id });
 
-    return { ...newUser, address };
+    return newUser;
   }
 
   async getUserById(id: string) {
-    const user = await this.userRepository.findByIdWithAddress(id);
+    const user = await this.userRepository.findById(id);
     if (!user) {
       throw new UserNotFoundException(id);
     }
@@ -130,18 +113,11 @@ export class UserService {
       profilePicture: user.profilePicture || undefined,
       createdAt: user.createdAt?.toISOString(),
       isTwoFactorEnabled: user.isTwoFactorAuthenticationEnabled,
-      address: user.address_id
-        ? {
-            street: user.street!,
-            city: user.city!,
-            country: user.country!,
-          }
-        : undefined,
     };
   }
 
   async getUserByUsername(username: string) {
-    const user = await this.userRepository.findByUsernameWithAddress(username);
+    const user = await this.userRepository.findByUsername(username);
     if (!user) {
       throw new UserNotFoundException(username);
     }
@@ -154,13 +130,6 @@ export class UserService {
       profilePicture: user.profilePicture || undefined,
       createdAt: user.createdAt?.toISOString(),
       isTwoFactorEnabled: user.isTwoFactorAuthenticationEnabled,
-      address: user.address_id
-        ? {
-            street: user.street!,
-            city: user.city!,
-            country: user.country!,
-          }
-        : undefined,
     };
   }
 

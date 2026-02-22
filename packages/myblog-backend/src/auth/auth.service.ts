@@ -136,11 +136,6 @@ export class AuthService {
       name: string;
       email: string;
       password: string;
-      address?: {
-        street: string;
-        city: string;
-        country: string;
-      };
     };
     res: Response;
   }) {
@@ -155,7 +150,6 @@ export class AuthService {
       name: user.name,
       email: user.email,
       username: user.username || undefined,
-      address: user.address,
       profilePicture: user.profilePicture,
       status: user.status,
       createdAt: user.createdAt.toISOString(),
@@ -338,7 +332,6 @@ export class AuthService {
       id: params.user.id,
       name: params.user.name,
       email: params.user.email,
-      address: params.user.address,
       profilePicture: params.user.profilePicture,
       status: params.user.status,
       createdAt: params.user.createdAt.toISOString(),

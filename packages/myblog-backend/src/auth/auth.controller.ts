@@ -17,14 +17,12 @@ export const authRouter = s.router(authContract, {
           name: ctx.body.name,
           email: ctx.body.email,
           password: ctx.body.password,
-          address: ctx.body.address,
         },
         res: ctx.res,
       });
       const body = {
         ...userResponse,
         profilePicture: userResponse.profilePicture ?? undefined,
-        address: userResponse.address ?? undefined,
       };
       return { status: 200 as const, body };
     } catch (error) {
@@ -137,7 +135,6 @@ export const authRouter = s.router(authContract, {
           name: user.name,
           email: user.email,
           username: user.username ?? undefined,
-          address: user.address ?? undefined,
           profilePicture: user.profilePicture ?? undefined,
           createdAt: user.createdAt.toISOString(),
           isTwoFactorEnabled: user.isTwoFactorAuthenticationEnabled,
@@ -199,7 +196,6 @@ export const authRouter = s.router(authContract, {
       const body = {
         ...userResponse,
         profilePicture: userResponse.profilePicture ?? undefined,
-        address: userResponse.address ?? undefined,
       };
       return { status: 200 as const, body };
     } catch (error) {

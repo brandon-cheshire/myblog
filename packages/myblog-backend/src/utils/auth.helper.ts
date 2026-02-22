@@ -43,69 +43,23 @@ export async function getAuthenticatedUser(
     const { _id: id, isSecondFactorAuthenticated } = verificationResponse;
     const user = await db
       .selectFrom('User')
-      .leftJoin('addresses', 'User.id', 'addresses.userId')
-      .where('User.id', '=', id)
-      .select([
-        'User.id',
-        'User.name',
-        'User.email',
-        'User.username',
-        'User.password_hash',
-        'User.profilePicture',
-        'User.status',
-        'User.isTwoFactorAuthenticationEnabled',
-        'User.twoFactorAuthenticationCode',
-        'User.verificationCode',
-        'User.verificationCodeExpiresAt',
-        'User.createdAt',
-        'User.updatedAt',
-        'addresses.id as address_id',
-        'addresses.street',
-        'addresses.city',
-        'addresses.country',
-        'addresses.userId',
-      ])
+      .where('id', '=', id)
+      .selectAll()
       .executeTakeFirst();
 
     if (!user) {
       throw new WrongAuthenticationTokenException();
     }
 
-    // Transform the flat result back to nested structure
-    const userWithAddress: User = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      username: user.username,
-      password_hash: user.password_hash,
-      profilePicture: user.profilePicture,
-      status: user.status,
-      isTwoFactorAuthenticationEnabled: user.isTwoFactorAuthenticationEnabled,
-      twoFactorAuthenticationCode: user.twoFactorAuthenticationCode,
-      verificationCode: user.verificationCode,
-      verificationCodeExpiresAt: user.verificationCodeExpiresAt,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-      address: user.address_id
-        ? {
-            id: user.address_id,
-            street: user.street!,
-            city: user.city!,
-            country: user.country!,
-            userId: user.userId!,
-          }
-        : null,
-    };
-
     if (
       !omitSecondFactor &&
-      userWithAddress.isTwoFactorAuthenticationEnabled &&
+      user.isTwoFactorAuthenticationEnabled &&
       !isSecondFactorAuthenticated
     ) {
       throw new WrongAuthenticationTokenException();
     }
 
-    return userWithAddress;
+    return user as User;
   } catch (error) {
     if (
       error instanceof WrongAuthenticationTokenException ||

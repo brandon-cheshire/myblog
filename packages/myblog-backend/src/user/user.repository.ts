@@ -39,52 +39,6 @@ export class UserRepository {
     return user as UserWithPasswordHash | undefined;
   }
 
-  async findByIdWithAddress(id: string) {
-    const user = await db
-      .selectFrom('User')
-      .leftJoin('addresses', 'User.id', 'addresses.userId')
-      .where('User.id', '=', id)
-      .select([
-        'User.id',
-        'User.name',
-        'User.email',
-        'User.username',
-        'User.profilePicture',
-        'User.createdAt',
-        'User.isTwoFactorAuthenticationEnabled',
-        'addresses.id as address_id',
-        'addresses.street',
-        'addresses.city',
-        'addresses.country',
-      ])
-      .executeTakeFirst();
-
-    return user;
-  }
-
-  async findByUsernameWithAddress(username: string) {
-    const user = await db
-      .selectFrom('User')
-      .leftJoin('addresses', 'User.id', 'addresses.userId')
-      .where('User.username', '=', username)
-      .select([
-        'User.id',
-        'User.name',
-        'User.email',
-        'User.username',
-        'User.profilePicture',
-        'User.createdAt',
-        'User.isTwoFactorAuthenticationEnabled',
-        'addresses.id as address_id',
-        'addresses.street',
-        'addresses.city',
-        'addresses.country',
-      ])
-      .executeTakeFirst();
-
-    return user;
-  }
-
   async create(userData: {
     name: string;
     email: string;

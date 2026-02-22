@@ -210,7 +210,7 @@ async function updatePost(
 
 ### Naming
 
-- **Tables**: Match existing style (e.g. `posts`, `"User"`, `addresses`); use singular where it reads well
+- **Tables**: Match existing style (e.g. `posts`, `"User"`); use singular where it reads well
 - **Primary Keys**: `id` (UUIDs)
 - **Foreign Keys**: `[referencing_table]_id` or camelCase as in existing schema (e.g. `authorId`, `userId`)
 - **Constraints**: `<key_type>_<table_name>_<column_name>`
