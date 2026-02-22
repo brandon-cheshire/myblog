@@ -6,7 +6,7 @@ import {
   AuthenticationTokenMissingException,
 } from '../auth/auth.errors';
 import type { User } from '@myblog/shared';
-import { UserRepository } from '../user/user.repository';
+import { UserRepository } from '../users/user.repository';
 
 function getTokenFromRequest(req: Request): string | null {
   const cookies = req.cookies;

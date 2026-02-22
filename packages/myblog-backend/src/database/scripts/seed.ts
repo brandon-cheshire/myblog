@@ -27,9 +27,9 @@ const force =
 
 async function seed() {
   const { db } = await import('../../utils/database.js');
-  const { UserService } = await import('../../user/user.service.js');
+  const { UserService } = await import('../../users/user.service.js');
   const { UserWithThatEmailAlreadyExistsException } =
-    await import('../../user/user.errors.js');
+    await import('../../users/user.errors.js');
 
   const userService = new UserService();
 

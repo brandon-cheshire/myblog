@@ -6,7 +6,7 @@ import { createExpressEndpoints } from '@ts-rest/express';
 import { authContract, postContract, userContract } from '@myblog/shared';
 import { authRouter } from './auth/auth.controller';
 import { postRouter } from './posts/posts.controller';
-import { userRouter } from './user/user.controller';
+import { userRouter } from './users/user.controller';
 import { initLogging } from './common/utils/app-logger/init-logging';
 import { AppLogger } from './common/utils/app-logger/app-logger';
 

@@ -13,7 +13,7 @@ import {
   CreateUserDtoSchema,
   updateUsernameSchema,
   UserSchema,
-} from './user/user.schema';
+} from './users/user.schema';
 
 const c = initContract();
 

@@ -2,8 +2,8 @@ import jwt from 'jsonwebtoken';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import type { CookieOptions, Response } from 'express';
-import { UserRepository } from '../user/user.repository';
-import { UserService } from '../user/user.service';
+import { UserRepository } from '../users/user.repository';
+import { UserService } from '../users/user.service';
 import { hashData, compareHashedData } from '../common/utils/bcrypt';
 import {
   generateVerificationCode,
@@ -17,7 +17,7 @@ import {
   UserNotActiveException,
 } from './auth.errors';
 import type { User } from '@myblog/shared';
-import type { UserWithPasswordHash } from '../user/user.types';
+import type { UserWithPasswordHash } from '../users/user.types';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 
 export interface TokenData {
