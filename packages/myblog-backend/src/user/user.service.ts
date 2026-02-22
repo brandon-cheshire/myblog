@@ -8,6 +8,7 @@ import {
   UsernameAlreadyTakenException,
 } from './user.errors';
 import type { User } from '../database/types';
+import type { UserResponse } from '@myblog/shared';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 import {
   minioClient,

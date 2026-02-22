@@ -63,7 +63,7 @@ export const userLoginSchema = z.object({
 
 export type UserLogin = z.infer<typeof userLoginSchema>;
 
-// API response shape (serialized, no sensitive fields)
+// API response shape (serialized, no sensitive fields). Use this for any user data returned to clients.
 export const userResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -72,6 +72,7 @@ export const userResponseSchema = z.object({
   profilePicture: z.string().optional(),
   createdAt: z.string().optional(),
   isTwoFactorEnabled: z.boolean().optional(),
+  status: userStatusTypeSchema.optional(),
 });
 
 export type UserResponse = z.infer<typeof userResponseSchema>;

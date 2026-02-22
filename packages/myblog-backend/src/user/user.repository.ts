@@ -1,42 +1,41 @@
 import { randomUUID } from 'node:crypto';
 import { db } from '../utils/database';
 import type { User, UserTable } from '../database/types';
-import type { UserWithPasswordHash } from '../user/user.types';
 import type { Updateable } from 'kysely';
 import type { UserStatusType } from '@myblog/shared';
 import { UniqueConstraintViolationException } from '../common/database.errors';
 
 export class UserRepository {
-  async findByEmail(email: string): Promise<UserWithPasswordHash | undefined> {
+  async findByEmail(email: string): Promise<User | undefined> {
     const user = await db
       .selectFrom('User')
       .where('email', '=', email)
       .selectAll()
       .executeTakeFirst();
 
-    return user as UserWithPasswordHash | undefined;
+    return user;
   }
 
-  async findById(id: string): Promise<UserWithPasswordHash | undefined> {
+  async findById(id: string): Promise<User | undefined> {
     const user = await db
       .selectFrom('User')
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst();
 
-    return user as UserWithPasswordHash | undefined;
+    return user;
   }
 
   async findByUsername(
     username: string
-  ): Promise<UserWithPasswordHash | undefined> {
+  ): Promise<User | undefined> {
     const user = await db
       .selectFrom('User')
       .where('username', '=', username)
       .selectAll()
       .executeTakeFirst();
 
-    return user as UserWithPasswordHash | undefined;
+    return user;
   }
 
   async create(userData: {

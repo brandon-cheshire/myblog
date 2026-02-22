@@ -17,7 +17,6 @@ import {
   UserNotActiveException,
 } from './auth.errors';
 import type { User } from '../database/types';
-import type { UserWithPasswordHash } from '../user/user.types';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 
 export interface TokenData {
@@ -35,7 +34,7 @@ export class AuthService {
   private userRepository = new UserRepository();
   private userService = new UserService();
 
-  private authenticateUser(user: UserWithPasswordHash, password: string): User {
+  private authenticateUser(user: User, password: string): User {
     if (user.status === 'password_reset_required') {
       throw new PasswordResetRequiredException();
     }
@@ -49,12 +48,8 @@ export class AuthService {
       throw new WrongCredentialsException();
     }
 
-    const {
-      password_hash: _,
-      passwordHash: __,
-      ...result
-    } = user as UserWithPasswordHash & { password_hash: string };
-    return result as unknown as User;
+    const { password_hash: _, ...result } = user;
+    return result as User;
   }
 
   private createToken(
