@@ -157,7 +157,7 @@ export class UserService {
       throw err;
     }
 
-    this.logger.info('Username updated', { userId });
+    this.logger.info('Username updated', { userId, username });
 
     return this.getUserById(userId);
   }
