@@ -165,10 +165,15 @@ export class UserService {
 
   async updateUsername(params: { userId: string; username: string }) {
     const { userId, username } = params;
-    const isTaken = await this.userRepository.isUsernameTaken({
-      username,
-      excludeUserId: userId,
-    });
+    const existingUser = await this.userRepository.findById(userId);
+    if (!existingUser) {
+      throw new UserNotFoundException(userId);
+    }
+    if (existingUser.username === username) {
+      return this.getUserById(userId);
+    }
+
+    const isTaken = await this.userRepository.isUsernameTaken({ username });
     if (isTaken) {
       throw new UsernameAlreadyTakenException(username);
     }
