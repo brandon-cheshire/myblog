@@ -14,9 +14,6 @@ export interface PostWithAuthor {
 }
 
 export class PostRepository {
-  /**
-   * Find all posts with author information
-   */
   async findAll(): Promise<PostWithAuthor[]> {
     const posts = await db
       .selectFrom('posts')
@@ -39,9 +36,6 @@ export class PostRepository {
     return posts as PostWithAuthor[];
   }
 
-  /**
-   * Find a post by ID with author information
-   */
   async findById(id: string): Promise<PostWithAuthor | undefined> {
     const post = await db
       .selectFrom('posts')
@@ -64,9 +58,6 @@ export class PostRepository {
     return post as PostWithAuthor | undefined;
   }
 
-  /**
-   * Find posts by author ID
-   */
   async findByAuthorId(authorId: string): Promise<PostWithAuthor[]> {
     const posts = await db
       .selectFrom('posts')
@@ -90,16 +81,13 @@ export class PostRepository {
     return posts as PostWithAuthor[];
   }
 
-  /**
-   * Create a new post
-   */
   async create(postData: {
     id: string;
     title: string;
     content: string;
     authorId: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
   }) {
     const post = await db
       .insertInto('posts')
@@ -117,19 +105,17 @@ export class PostRepository {
     return post;
   }
 
-  /**
-   * Update a post
-   */
-  async update(
-    id: string,
-    updates: { title?: string; content?: string; updatedAt: Date }
-  ) {
-    await db.updateTable('posts').set(updates).where('id', '=', id).execute();
+  async update(params: {
+    id: string;
+    updates: { title?: string; content?: string; updatedAt: string };
+  }) {
+    await db
+      .updateTable('posts')
+      .set(params.updates)
+      .where('id', '=', params.id)
+      .execute();
   }
 
-  /**
-   * Delete a post
-   */
   async delete(id: string): Promise<void> {
     await db.deleteFrom('posts').where('id', '=', id).execute();
   }

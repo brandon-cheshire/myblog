@@ -8,9 +8,6 @@ export class PostService {
   private readonly logger = new AppLogger(PostService.name);
   private postRepository = new PostRepository();
 
-  /**
-   * Transform PostWithAuthor to PostResponse format
-   */
   private transformPost(post: PostWithAuthor): PostResponse {
     return {
       _id: post.id,
@@ -30,17 +27,11 @@ export class PostService {
     };
   }
 
-  /**
-   * Get all posts
-   */
   async getAllPosts(): Promise<PostResponse[]> {
     const posts = await this.postRepository.findAll();
     return posts.map((post) => this.transformPost(post));
   }
 
-  /**
-   * Get a post by ID
-   */
   async getPostById(id: string): Promise<PostResponse> {
     const post = await this.postRepository.findById(id);
     if (!post) {
@@ -49,24 +40,18 @@ export class PostService {
     return this.transformPost(post);
   }
 
-  /**
-   * Get posts by author ID
-   */
   async getPostsByAuthorId(authorId: string): Promise<PostResponse[]> {
     const posts = await this.postRepository.findByAuthorId(authorId);
     return posts.map((post) => this.transformPost(post));
   }
 
-  /**
-   * Create a new post
-   */
   async createPost(data: {
     title: string;
     content: string;
     authorId: string;
   }): Promise<PostResponse> {
     const postId = randomUUID();
-    const now = new Date();
+    const now = new Date().toISOString();
 
     await this.postRepository.create({
       id: postId,
@@ -87,18 +72,12 @@ export class PostService {
     return this.transformPost(post);
   }
 
-  /**
-   * Update a post
-   */
-  async updatePost(
-    postId: string,
-    authorId: string,
-    updates: {
-      title?: string;
-      content?: string;
-    }
-  ): Promise<PostResponse> {
-    // Verify post exists and belongs to user
+  async updatePost(params: {
+    postId: string;
+    authorId: string;
+    updates: { title?: string; content?: string };
+  }): Promise<PostResponse> {
+    const { postId, authorId, updates } = params;
     const post = await this.postRepository.findById(postId);
     if (!post) {
       throw new PostNotFoundException(postId);
@@ -108,11 +87,10 @@ export class PostService {
       throw new NotAuthorizedException();
     }
 
-    // Update post
-    const updatedAt = new Date();
-    await this.postRepository.update(postId, {
-      ...updates,
-      updatedAt,
+    const updatedAt = new Date().toISOString();
+    await this.postRepository.update({
+      id: postId,
+      updates: { ...updates, updatedAt },
     });
 
     const updatedPost = await this.postRepository.findById(postId);
@@ -125,11 +103,11 @@ export class PostService {
     return this.transformPost(updatedPost);
   }
 
-  /**
-   * Delete a post
-   */
-  async deletePost(postId: string, authorId: string): Promise<void> {
-    // Verify post exists and belongs to user
+  async deletePost(params: {
+    postId: string;
+    authorId: string;
+  }): Promise<void> {
+    const { postId, authorId } = params;
     const post = await this.postRepository.findById(postId);
     if (!post) {
       throw new PostNotFoundException(postId);

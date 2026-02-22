@@ -55,9 +55,13 @@ export const postRouter = s.router(postContract, {
   updatePost: async (ctx) => {
     try {
       const user = await getAuthenticatedUser(ctx);
-      const post = await postService.updatePost(ctx.params.id, user.id, {
-        title: ctx.body.title,
-        content: ctx.body.content,
+      const post = await postService.updatePost({
+        postId: ctx.params.id,
+        authorId: user.id,
+        updates: {
+          title: ctx.body.title,
+          content: ctx.body.content,
+        },
       });
       return { status: 200 as const, body: post };
     } catch (error) {
@@ -71,7 +75,10 @@ export const postRouter = s.router(postContract, {
   deletePost: async (ctx) => {
     try {
       const user = await getAuthenticatedUser(ctx);
-      await postService.deletePost(ctx.params.id, user.id);
+      await postService.deletePost({
+        postId: ctx.params.id,
+        authorId: user.id,
+      });
       return { status: 200 as const, body: {} };
     } catch (error) {
       return handleControllerError(error, {

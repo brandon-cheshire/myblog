@@ -12,15 +12,15 @@ const authService = new AuthService();
 export const authRouter = s.router(authContract, {
   register: async (ctx) => {
     try {
-      const userResponse = await authService.register(
-        {
+      const userResponse = await authService.register({
+        userData: {
           name: ctx.body.name,
           email: ctx.body.email,
           password: ctx.body.password,
           address: ctx.body.address,
         },
-        ctx.res
-      );
+        res: ctx.res,
+      });
       const body = {
         ...userResponse,
         profilePicture: userResponse.profilePicture ?? undefined,
@@ -37,11 +37,11 @@ export const authRouter = s.router(authContract, {
 
   login: async (ctx) => {
     try {
-      const userResponse = await authService.login(
-        ctx.body.email,
-        ctx.body.password,
-        ctx.res
-      );
+      const userResponse = await authService.login({
+        email: ctx.body.email,
+        password: ctx.body.password,
+        res: ctx.res,
+      });
       const body = {
         ...userResponse,
         profilePicture:
@@ -60,11 +60,11 @@ export const authRouter = s.router(authContract, {
   changePassword: async (ctx) => {
     try {
       const user = await getAuthenticatedUser(ctx);
-      await authService.changePassword(
-        user.id,
-        ctx.body.currentPassword,
-        ctx.body.newPassword
-      );
+      await authService.changePassword({
+        userId: user.id,
+        currentPassword: ctx.body.currentPassword,
+        newPassword: ctx.body.newPassword,
+      });
       return {
         status: 200 as const,
         body: { message: 'Password changed successfully' },
@@ -91,11 +91,11 @@ export const authRouter = s.router(authContract, {
 
   resetPasswordConfirm: async (ctx) => {
     try {
-      await authService.confirmPasswordReset(
-        ctx.body.userId,
-        ctx.body.verificationCode,
-        ctx.body.password
-      );
+      await authService.confirmPasswordReset({
+        userId: ctx.body.userId,
+        verificationCode: ctx.body.verificationCode,
+        newPassword: ctx.body.password,
+      });
       return {
         status: 200 as const,
         body: { message: 'Password reset successfully' },
@@ -161,11 +161,11 @@ export const authRouter = s.router(authContract, {
   turnOnTwoFactor: async (ctx) => {
     try {
       const user = await getAuthenticatedUser(ctx);
-      await authService.enableTwoFactor(
-        user.id,
-        ctx.body.twoFactorAuthenticationCode,
-        user
-      );
+      await authService.enableTwoFactor({
+        userId: user.id,
+        code: ctx.body.twoFactorAuthenticationCode,
+        user,
+      });
       return { status: 200 as const, body: {} };
     } catch (error) {
       return handleControllerError(error, {
@@ -191,11 +191,11 @@ export const authRouter = s.router(authContract, {
   authenticateTwoFactor: async (ctx) => {
     try {
       const user = await getAuthenticatedUser(ctx, true);
-      const userResponse = await authService.authenticateTwoFactor(
+      const userResponse = await authService.authenticateTwoFactor({
         user,
-        ctx.body.twoFactorAuthenticationCode,
-        ctx.res
-      );
+        code: ctx.body.twoFactorAuthenticationCode,
+        res: ctx.res,
+      });
       const body = {
         ...userResponse,
         profilePicture: userResponse.profilePicture ?? undefined,

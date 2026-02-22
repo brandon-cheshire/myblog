@@ -1,9 +1,6 @@
 import { db } from '../utils/database';
 
 export class AddressRepository {
-  /**
-   * Create an address for a user
-   */
   async create(addressData: {
     street: string;
     city: string;
@@ -24,9 +21,6 @@ export class AddressRepository {
     return address;
   }
 
-  /**
-   * Find address by user ID
-   */
   async findByUserId(userId: string) {
     const address = await db
       .selectFrom('addresses')

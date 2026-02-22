@@ -6,9 +6,6 @@ import type { Updateable } from 'kysely';
 import type { UserStatusType } from '@myblog/shared';
 
 export class UserRepository {
-  /**
-   * Find a user by email
-   */
   async findByEmail(email: string): Promise<UserWithPasswordHash | undefined> {
     const user = await db
       .selectFrom('User')
@@ -19,9 +16,6 @@ export class UserRepository {
     return user as UserWithPasswordHash | undefined;
   }
 
-  /**
-   * Find a user by ID
-   */
   async findById(id: string): Promise<UserWithPasswordHash | undefined> {
     const user = await db
       .selectFrom('User')
@@ -32,9 +26,6 @@ export class UserRepository {
     return user as UserWithPasswordHash | undefined;
   }
 
-  /**
-   * Find a user by username
-   */
   async findByUsername(
     username: string
   ): Promise<UserWithPasswordHash | undefined> {
@@ -47,9 +38,6 @@ export class UserRepository {
     return user as UserWithPasswordHash | undefined;
   }
 
-  /**
-   * Find a user by ID with address
-   */
   async findByIdWithAddress(id: string) {
     const user = await db
       .selectFrom('User')
@@ -73,9 +61,6 @@ export class UserRepository {
     return user;
   }
 
-  /**
-   * Find a user by username with address
-   */
   async findByUsernameWithAddress(username: string) {
     const user = await db
       .selectFrom('User')
@@ -99,9 +84,6 @@ export class UserRepository {
     return user;
   }
 
-  /**
-   * Create a new user
-   */
   async create(userData: {
     name: string;
     email: string;
@@ -126,28 +108,25 @@ export class UserRepository {
       .returningAll()
       .executeTakeFirstOrThrow();
 
-    // Strip password hash from return
     const { password_hash: _, ...user } = newUser;
     return user as User;
   }
 
-  /**
-   * Update user
-   */
-  async update(id: string, updates: Updateable<UserTable>): Promise<void> {
-    await db.updateTable('User').set(updates).where('id', '=', id).execute();
+  async update(params: {
+    id: string;
+    updates: Updateable<UserTable>;
+  }): Promise<void> {
+    await db
+      .updateTable('User')
+      .set(params.updates)
+      .where('id', '=', params.id)
+      .execute();
   }
 
-  /**
-   * Update user's 2FA code
-   */
-  async updateTwoFactorCode(id: string, code: string): Promise<void> {
-    await this.update(id, { twoFactorAuthenticationCode: code });
+  async updateTwoFactorCode(params: { id: string; code: string }): Promise<void> {
+    await this.update({ id: params.id, updates: { twoFactorAuthenticationCode: params.code } });
   }
 
-  /**
-   * Enable 2FA for user
-   */
   async enableTwoFactor(id: string): Promise<void> {
     await db
       .updateTable('User')
@@ -156,9 +135,6 @@ export class UserRepository {
       .execute();
   }
 
-  /**
-   * Disable 2FA for user
-   */
   async disableTwoFactor(id: string): Promise<void> {
     await db
       .updateTable('User')
@@ -167,80 +143,80 @@ export class UserRepository {
       .execute();
   }
 
-  /**
-   * Update profile picture
-   */
-  async updateProfilePicture(id: string, filename: string): Promise<void> {
-    await this.update(id, { profilePicture: filename });
+  async updateProfilePicture(params: {
+    id: string;
+    filename: string;
+  }): Promise<void> {
+    await this.update({ id: params.id, updates: { profilePicture: params.filename } });
   }
 
-  /**
-   * Update password hash
-   */
-  async updatePassword(id: string, passwordHash: string): Promise<void> {
-    await this.update(id, {
-      password_hash: passwordHash,
-      updatedAt: new Date().toISOString(),
+  async updatePassword(params: {
+    id: string;
+    passwordHash: string;
+  }): Promise<void> {
+    await this.update({
+      id: params.id,
+      updates: {
+        password_hash: params.passwordHash,
+        updatedAt: new Date().toISOString(),
+      },
     });
   }
 
-  /**
-   * Update verification code and expiry
-   */
-  async updateVerificationCode(
-    id: string,
-    code: string,
-    expiresAt: string
-  ): Promise<void> {
-    await this.update(id, {
-      verificationCode: code,
-      verificationCodeExpiresAt: expiresAt,
-      updatedAt: new Date().toISOString(),
+  async updateVerificationCode(params: {
+    id: string;
+    code: string;
+    expiresAt: string;
+  }): Promise<void> {
+    await this.update({
+      id: params.id,
+      updates: {
+        verificationCode: params.code,
+        verificationCodeExpiresAt: params.expiresAt,
+        updatedAt: new Date().toISOString(),
+      },
     });
   }
 
-  /**
-   * Clear verification code
-   */
   async clearVerificationCode(id: string): Promise<void> {
-    await this.update(id, {
-      verificationCode: null,
-      verificationCodeExpiresAt: null,
-      updatedAt: new Date().toISOString(),
+    await this.update({
+      id,
+      updates: {
+        verificationCode: null,
+        verificationCodeExpiresAt: null,
+        updatedAt: new Date().toISOString(),
+      },
     });
   }
 
-  /**
-   * Update user status
-   */
-  async updateStatus(id: string, status: UserStatusType): Promise<void> {
-    await this.update(id, { status });
+  async updateStatus(params: {
+    id: string;
+    status: UserStatusType;
+  }): Promise<void> {
+    await this.update({ id: params.id, updates: { status: params.status } });
   }
 
-  /**
-   * Update username
-   */
-  async updateUsername(id: string, username: string): Promise<void> {
-    await this.update(id, {
-      username,
-      updatedAt: new Date().toISOString(),
+  async updateUsername(params: { id: string; username: string }): Promise<void> {
+    await this.update({
+      id: params.id,
+      updates: {
+        username: params.username,
+        updatedAt: new Date().toISOString(),
+      },
     });
   }
 
-  /**
-   * Check if username is taken
-   */
-  async isUsernameTaken(
-    username: string,
-    excludeUserId?: string
-  ): Promise<boolean> {
+  async isUsernameTaken(params: {
+    username: string;
+    excludeUserId?: string;
+  }): Promise<boolean> {
     let query = db
       .selectFrom('User')
       .select('id')
-      .where('username', '=', username);
+      .where('username', '=', params.username);
 
-    if (excludeUserId) {
-      query = query.where('id', '!=', excludeUserId);
+    if (params.excludeUserId) {
+      query = query.where('id', '!=', params.excludeUserId);
     }
 
     const user = await query.executeTakeFirst();

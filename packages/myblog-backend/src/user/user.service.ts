@@ -20,23 +20,17 @@ export class UserService {
   private userRepository = new UserRepository();
   private addressRepository = new AddressRepository();
 
-  /**
-   * Generate a base username from a name (remove spaces, lowercase, keep only valid chars)
-   */
   private generateBaseUsername(name: string): string {
-    // Remove spaces, convert to lowercase, keep only alphanumeric, dots, hyphens, underscores
     let base = name
       .toLowerCase()
       .trim()
-      .replace(/\s+/g, '') // Remove all spaces
-      .replace(/[^a-z0-9._-]/g, '') // Remove invalid characters
-      .replace(/\.{2,}/g, '.') // Replace consecutive dots with single dot
-      .replace(/^\.+|\.+$/g, '') // Remove leading/trailing dots
-      .substring(0, 30); // Max 30 chars
+      .replace(/\s+/g, '')
+      .replace(/[^a-z0-9._-]/g, '')
+      .replace(/\.{2,}/g, '.')
+      .replace(/^\.+|\.+$/g, '')
+      .substring(0, 30);
 
-    // If empty or too short after cleaning, use a default
     if (base.length < 3) {
-      // Try to use first letters of name, or fallback to 'user'
       const initials = name
         .split(/\s+/)
         .map((word) => word.charAt(0).toLowerCase())
@@ -53,38 +47,32 @@ export class UserService {
     return base;
   }
 
-  /**
-   * Find an available username by trying the base name, then adding incrementing numbers
-   */
   private async findAvailableUsername(baseUsername: string): Promise<string> {
-    // Try the base username first
-    const isTaken = await this.userRepository.isUsernameTaken(baseUsername);
+    const isTaken = await this.userRepository.isUsernameTaken({
+      username: baseUsername,
+    });
     if (!isTaken) {
       return baseUsername;
     }
 
-    // Try with incrementing numbers
     let counter = 1;
     let candidate: string;
     do {
-      // Append number, but keep total length <= 30
       const numberStr = counter.toString();
       const maxBaseLength = 30 - numberStr.length;
       candidate = baseUsername.substring(0, maxBaseLength) + numberStr;
       counter++;
 
-      // Safety check to prevent infinite loop
       if (counter > 10000) {
         throw new Error('Unable to generate unique username');
       }
-    } while (await this.userRepository.isUsernameTaken(candidate));
+    } while (
+      await this.userRepository.isUsernameTaken({ username: candidate })
+    );
 
     return candidate;
   }
 
-  /**
-   * Register a new user with optional address
-   */
   async register(userData: {
     name: string;
     email: string;
@@ -95,20 +83,15 @@ export class UserService {
       country: string;
     };
   }): Promise<User> {
-    // Check if user already exists
     const existingUser = await this.userRepository.findByEmail(userData.email);
     if (existingUser) {
       throw new UserWithThatEmailAlreadyExistsException(userData.email);
     }
 
-    // Hash password
     const hashedPassword = hashData(userData.password);
-
-    // Generate a unique username from the user's name
     const baseUsername = this.generateBaseUsername(userData.name);
     const username = await this.findAvailableUsername(baseUsername);
 
-    // Create user
     const newUser = await this.userRepository.create({
       name: userData.name,
       email: userData.email,
@@ -132,9 +115,6 @@ export class UserService {
     return { ...newUser, address };
   }
 
-  /**
-   * Get user by ID with address
-   */
   async getUserById(id: string) {
     const user = await this.userRepository.findByIdWithAddress(id);
     if (!user) {
@@ -159,9 +139,6 @@ export class UserService {
     };
   }
 
-  /**
-   * Get user by username with address
-   */
   async getUserByUsername(username: string) {
     const user = await this.userRepository.findByUsernameWithAddress(username);
     if (!user) {
@@ -186,37 +163,31 @@ export class UserService {
     };
   }
 
-  /**
-   * Update user's username. Returns the updated user.
-   */
   async updateUsername(params: { userId: string; username: string }) {
     const { userId, username } = params;
-    const isTaken = await this.userRepository.isUsernameTaken(username, userId);
+    const isTaken = await this.userRepository.isUsernameTaken({
+      username,
+      excludeUserId: userId,
+    });
     if (isTaken) {
       throw new UsernameAlreadyTakenException(username);
     }
 
-    await this.userRepository.updateUsername(userId, username);
+    await this.userRepository.updateUsername({ id: userId, username });
     this.logger.info('Username updated', { userId });
 
     return this.getUserById(userId);
   }
 
-  /**
-   * Update user's profile picture (DB only)
-   */
   async updateProfilePicture(params: {
     userId: string;
     filename: string;
   }): Promise<void> {
     const { userId, filename } = params;
-    await this.userRepository.updateProfilePicture(userId, filename);
+    await this.userRepository.updateProfilePicture({ id: userId, filename });
     this.logger.info('Profile picture updated', { userId });
   }
 
-  /**
-   * Upload profile picture: ensure bucket, store in MinIO, remove previous if any, update user.
-   */
   async uploadProfilePicture(params: {
     userId: string;
     file: Express.Multer.File;
@@ -250,35 +221,26 @@ export class UserService {
       { 'Content-Type': file.mimetype }
     );
 
-    await this.userRepository.updateProfilePicture(userId, filename);
+    await this.userRepository.updateProfilePicture({ id: userId, filename });
     this.logger.info('Profile picture updated', { userId });
     return { profilePicture: filename };
   }
 
-  /**
-   * Enable 2FA for user
-   */
   async enableTwoFactor(userId: string): Promise<void> {
     await this.userRepository.enableTwoFactor(userId);
     this.logger.info('2FA enabled for user', { userId });
   }
 
-  /**
-   * Disable 2FA for user
-   */
   async disableTwoFactor(userId: string): Promise<void> {
     await this.userRepository.disableTwoFactor(userId);
     this.logger.info('2FA disabled for user', { userId });
   }
 
-  /**
-   * Update 2FA code for user
-   */
   async updateTwoFactorCode(params: {
     userId: string;
     code: string;
   }): Promise<void> {
     const { userId, code } = params;
-    await this.userRepository.updateTwoFactorCode(userId, code);
+    await this.userRepository.updateTwoFactorCode({ id: userId, code });
   }
 }
