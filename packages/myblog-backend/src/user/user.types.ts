@@ -1,3 +1,5 @@
 import type { User } from '@myblog/shared';
 
-export type UserWithPasswordHash = User & { password_hash: string | null };
+export interface UserWithPasswordHash extends User {
+  password_hash: string | null;
+}
