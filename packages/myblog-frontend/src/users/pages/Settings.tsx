@@ -299,8 +299,7 @@ export function Settings() {
                 'Are you sure you want to delete your account? This action cannot be undone.'
               )
             ) {
-              // Handle account deletion
-              console.log('Account deletion requested');
+              // TODO: Wire up account deletion API when backend supports it
             }
           }}
           style={{ padding: '0.75rem 1.5rem' }}

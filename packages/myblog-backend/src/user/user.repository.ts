@@ -234,13 +234,13 @@ export class UserRepository {
     username: string,
     excludeUserId?: string
   ): Promise<boolean> {
-    const query = db
+    let query = db
       .selectFrom('User')
       .select('id')
       .where('username', '=', username);
 
     if (excludeUserId) {
-      query.where('id', '!=', excludeUserId);
+      query = query.where('id', '!=', excludeUserId);
     }
 
     const user = await query.executeTakeFirst();

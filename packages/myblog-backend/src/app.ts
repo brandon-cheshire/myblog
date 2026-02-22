@@ -22,7 +22,6 @@ class App {
   constructor(port: number) {
     this.app = express();
     this.port = port;
-    this.connectToTheDatabase();
     this.initializeMiddlewares();
     this.initializeRoutes();
     this.initializeErrorHandling();
@@ -41,13 +40,12 @@ class App {
 
     // Direct backend URL from frontend: CORS must allow the request origin.
     // In development, allow any origin so login/fetch work regardless of port. (Auth is Bearer, no cookies.)
-    const isDev = process.env.NODE_ENV !== 'production';
     const allowedOrigin = process.env.FRONTEND_URL;
     this.app.use(
       cors({
         origin: allowedOrigin
           ? allowedOrigin
-          : isDev
+          : isLocal
             ? true
             : (
                 origin: string | undefined,
@@ -58,7 +56,7 @@ class App {
                   /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
                 cb(null, allow ? origin || true : false);
               },
-        credentials: isDev ? false : true,
+        credentials: isLocal ? false : true,
         allowedHeaders: ['Content-Type', 'Authorization'],
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         optionsSuccessStatus: 200,
@@ -123,10 +121,6 @@ class App {
     this.app.use('/api', apiRouter);
   }
 
-  private connectToTheDatabase() {
-    console.log('Database connection will be established via Prisma...');
-    // Prisma connects automatically when used
-  }
 }
 
 export { App };
