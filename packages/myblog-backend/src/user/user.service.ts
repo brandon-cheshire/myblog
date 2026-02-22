@@ -2,6 +2,7 @@ import * as path from 'path';
 import { UserRepository } from './user.repository';
 import { AddressRepository } from './address.repository';
 import { hashData } from '../common/utils/bcrypt';
+import { UniqueConstraintViolationException } from '../common/database.errors';
 import {
   UserNotFoundException,
   UserWithThatEmailAlreadyExistsException,
@@ -178,7 +179,15 @@ export class UserService {
       throw new UsernameAlreadyTakenException(username);
     }
 
-    await this.userRepository.updateUsername({ id: userId, username });
+    try {
+      await this.userRepository.updateUsername({ id: userId, username });
+    } catch (err) {
+      if (err instanceof UniqueConstraintViolationException) {
+        throw new UsernameAlreadyTakenException(username);
+      }
+      throw err;
+    }
+
     this.logger.info('Username updated', { userId });
 
     return this.getUserById(userId);

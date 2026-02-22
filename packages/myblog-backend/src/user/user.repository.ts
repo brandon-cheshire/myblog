@@ -4,6 +4,7 @@ import type { User, UserTable } from '../database/types';
 import type { UserWithPasswordHash } from '../user/user.types';
 import type { Updateable } from 'kysely';
 import type { UserStatusType } from '@myblog/shared';
+import { UniqueConstraintViolationException } from '../common/database.errors';
 
 export class UserRepository {
   async findByEmail(email: string): Promise<UserWithPasswordHash | undefined> {
@@ -197,13 +198,23 @@ export class UserRepository {
   }
 
   async updateUsername(params: { id: string; username: string }): Promise<void> {
-    await this.update({
-      id: params.id,
-      updates: {
-        username: params.username,
-        updatedAt: new Date().toISOString(),
-      },
-    });
+    try {
+      await this.update({
+        id: params.id,
+        updates: {
+          username: params.username,
+          updatedAt: new Date().toISOString(),
+        },
+      });
+    } catch (err) {
+      const code =
+        (err as { code?: string })?.code ??
+        (err as { cause?: { code?: string } })?.cause?.code;
+      if (code === '23505') {
+        throw new UniqueConstraintViolationException();
+      }
+      throw err;
+    }
   }
 
   async isUsernameTaken(params: {
