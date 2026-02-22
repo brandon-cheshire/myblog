@@ -8,7 +8,6 @@ import {
   UsernameAlreadyTakenException,
 } from './user.errors';
 import type { User } from '@myblog/shared';
-import { stripPasswordHash } from './user.utils';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 import {
   minioClient,
@@ -97,7 +96,7 @@ export class UserService {
 
     this.logger.info('User created', { userId: newUser.id });
 
-    return stripPasswordHash(newUser);
+    return newUser;
   }
 
   async getUserById(id: string): Promise<User> {

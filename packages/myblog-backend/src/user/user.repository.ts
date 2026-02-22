@@ -1,79 +1,90 @@
 import { randomUUID } from 'node:crypto';
 import { db } from '../utils/database';
-import type { UserTable } from '../database/types';
+import type { UserRow, UserTable } from '../database/types';
 import type { Updateable } from 'kysely';
 import type { UserStatusType, User } from '@myblog/shared';
 import { UniqueConstraintViolationException } from '../common/database.errors';
 import type { UserWithPasswordHash } from './user.types';
 
-const PUBLIC_USER_COLUMNS = [
-  'id',
-  'name',
-  'email',
-  'username',
-  'profilePicture',
-  'isTwoFactorAuthenticationEnabled',
-  'twoFactorAuthenticationCode',
-  'status',
-  'verificationCode',
-  'verificationCodeExpiresAt',
-  'createdAt',
-  'updatedAt',
-] as const;
-
 export class UserRepository {
+  private toUser(user: UserRow): User {
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      username: user.username,
+      profilePicture: user.profilePicture,
+      isTwoFactorAuthenticationEnabled: user.isTwoFactorAuthenticationEnabled,
+      twoFactorAuthenticationCode: user.twoFactorAuthenticationCode,
+      status: user.status,
+      verificationCode: user.verificationCode,
+      verificationCodeExpiresAt: user.verificationCodeExpiresAt
+        ? new Date(user.verificationCodeExpiresAt)
+        : null,
+      createdAt: new Date(user.createdAt),
+      updatedAt: user.updatedAt ? new Date(user.updatedAt) : null,
+    };
+  }
+
+  private toUserWithPasswordHash(user: UserRow): UserWithPasswordHash {
+    return {
+      ...this.toUser(user),
+      password_hash: user.password_hash,
+    };
+  }
+
   async findByEmail(email: string): Promise<User | undefined> {
-    const user = await db
+    const result = await db
       .selectFrom('User')
       .where('email', '=', email)
-      .select(PUBLIC_USER_COLUMNS)
+      .selectAll()
       .executeTakeFirst();
 
-    return user as User | undefined;
+    return result ? this.toUser(result) : undefined;
   }
 
   async findByEmailWithPasswordHash(
     email: string
   ): Promise<UserWithPasswordHash | undefined> {
-    const user = await db
+    const result = await db
       .selectFrom('User')
       .where('email', '=', email)
       .selectAll()
       .executeTakeFirst();
 
-    return user as UserWithPasswordHash | undefined;
+    return result ? this.toUserWithPasswordHash(result) : undefined;
   }
 
   async findById(id: string): Promise<User | undefined> {
-    const user = await db
-      .selectFrom('User')
-      .where('id', '=', id)
-      .select(PUBLIC_USER_COLUMNS)
-      .executeTakeFirst();
-
-    return user as User | undefined;
-  }
-
-  async findByIdWithPasswordHash(
-    id: string
-  ): Promise<UserWithPasswordHash | undefined> {
-    const user = await db
+    const result = await db
       .selectFrom('User')
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst();
 
-    return user as UserWithPasswordHash | undefined;
+    return result ? this.toUser(result) : undefined;
+  }
+
+  async findByIdWithPasswordHash(
+    id: string
+  ): Promise<UserWithPasswordHash | undefined> {
+    const result = await db
+      .selectFrom('User')
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst();
+
+    return result ? this.toUserWithPasswordHash(result) : undefined;
   }
 
   async findByUsername(username: string): Promise<User | undefined> {
-    const user = await db
+    const result = await db
       .selectFrom('User')
       .where('username', '=', username)
-      .select(PUBLIC_USER_COLUMNS)
+      .selectAll()
       .executeTakeFirst();
 
-    return user as User | undefined;
+    return result ? this.toUser(result) : undefined;
   }
 
   async create(userData: {
@@ -82,10 +93,10 @@ export class UserRepository {
     password_hash: string;
     status?: UserStatusType;
     username?: string | null;
-  }): Promise<UserWithPasswordHash> {
+  }): Promise<User> {
     const userId = randomUUID();
     const now = new Date().toISOString();
-    const newUser = await db
+    const result = await db
       .insertInto('User')
       .values({
         id: userId,
@@ -100,18 +111,21 @@ export class UserRepository {
       .returningAll()
       .executeTakeFirstOrThrow();
 
-    return newUser as UserWithPasswordHash;
+    return this.toUser(result);
   }
 
   async update(params: {
     id: string;
     updates: Updateable<UserTable>;
-  }): Promise<void> {
-    await db
+  }): Promise<User> {
+    const result = await db
       .updateTable('User')
       .set(params.updates)
       .where('id', '=', params.id)
-      .execute();
+      .returningAll()
+      .executeTakeFirstOrThrow();
+
+    return this.toUser(result);
   }
 
   async updateTwoFactorCode(params: { id: string; code: string }): Promise<void> {

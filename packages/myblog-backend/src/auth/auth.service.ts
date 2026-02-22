@@ -18,7 +18,6 @@ import {
 } from './auth.errors';
 import type { User } from '@myblog/shared';
 import type { UserWithPasswordHash } from '../user/user.types';
-import { stripPasswordHash } from '../user/user.utils';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 
 export interface TokenData {
@@ -36,10 +35,11 @@ export class AuthService {
   private userRepository = new UserRepository();
   private userService = new UserService();
 
+  /** Verifies password against hash, then strips hash. Callers only ever receive User. */
   private authenticateUser(
     user: UserWithPasswordHash,
     password: string
-  ): UserWithPasswordHash {
+  ): User {
     if (user.status === 'password_reset_required') {
       throw new PasswordResetRequiredException();
     }
@@ -53,7 +53,8 @@ export class AuthService {
       throw new WrongCredentialsException();
     }
 
-    return user;
+    const { password_hash: _, ...rest } = user;
+    return rest as User;
   }
 
   private createToken(
@@ -173,16 +174,14 @@ export class AuthService {
 
     this.logger.info('User logged in', { userId: authenticatedUser.id });
 
-    const publicUser = stripPasswordHash(authenticatedUser);
-
     if (authenticatedUser.isTwoFactorAuthenticationEnabled) {
       return {
-        ...publicUser,
+        ...authenticatedUser,
         isTwoFactorAuthenticationEnabled: true,
       };
     }
 
-    return { ...publicUser, token: tokenData.token };
+    return { ...authenticatedUser, token: tokenData.token };
   }
 
   async changePassword(params: {
