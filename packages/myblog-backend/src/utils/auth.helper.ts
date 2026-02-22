@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken';
 import type { Request } from 'express';
 import { DataStoredInToken } from '../auth/auth.service';
-import { db } from './database';
 import {
   WrongAuthenticationTokenException,
   AuthenticationTokenMissingException,
 } from '../auth/auth.errors';
-import type { User } from '../database/types';
+import type { User } from '@myblog/shared';
+import { UserRepository } from '../user/user.repository';
 
 function getTokenFromRequest(req: Request): string | null {
   const cookies = req.cookies;
@@ -41,11 +41,8 @@ export async function getAuthenticatedUser(
       secret
     ) as unknown as DataStoredInToken;
     const { _id: id, isSecondFactorAuthenticated } = verificationResponse;
-    const user = await db
-      .selectFrom('User')
-      .where('id', '=', id)
-      .selectAll()
-      .executeTakeFirst();
+    const userRepository = new UserRepository();
+    const user = await userRepository.findById(id);
 
     if (!user) {
       throw new WrongAuthenticationTokenException();
@@ -59,7 +56,7 @@ export async function getAuthenticatedUser(
       throw new WrongAuthenticationTokenException();
     }
 
-    return user as User;
+    return user;
   } catch (error) {
     if (
       error instanceof WrongAuthenticationTokenException ||

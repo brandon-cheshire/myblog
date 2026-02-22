@@ -20,8 +20,7 @@ export const userRouter = s.router(userContract, {
   createUser: async (ctx) => {
     try {
       const user = await userService.create(ctx.body);
-      const { password_hash: _, ...body } = user;
-      return { status: 201 as const, body };
+      return { status: 201 as const, body: user };
     } catch (error) {
       return handleControllerError(error, {
         logger,
@@ -32,8 +31,7 @@ export const userRouter = s.router(userContract, {
   getUser: async (ctx) => {
     try {
       const user = await userService.getUserById(ctx.params.id);
-      const { password_hash: _, ...body } = user;
-      return { status: 200 as const, body };
+      return { status: 200 as const, body: user };
     } catch (error) {
       return handleControllerError(error, {
         logger,
@@ -45,8 +43,7 @@ export const userRouter = s.router(userContract, {
   getUserByUsername: async (ctx) => {
     try {
       const user = await userService.getUserByUsername(ctx.params.username);
-      const { password_hash: _, ...body } = user;
-      return { status: 200 as const, body };
+      return { status: 200 as const, body: user };
     } catch (error) {
       return handleControllerError(error, {
         logger,
@@ -63,8 +60,7 @@ export const userRouter = s.router(userContract, {
         userId: user.id,
         username,
       });
-      const { password_hash: _, ...body } = updatedUser;
-      return { status: 200 as const, body };
+      return { status: 200 as const, body: updatedUser };
     } catch (error) {
       return handleControllerError(error, {
         logger,

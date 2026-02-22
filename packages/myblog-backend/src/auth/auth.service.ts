@@ -16,7 +16,9 @@ import {
   WrongAuthenticationTokenException,
   UserNotActiveException,
 } from './auth.errors';
+import type { User } from '@myblog/shared';
 import type { UserWithPasswordHash } from '../user/user.types';
+import { stripPasswordHash } from '../user/user.utils';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 
 export interface TokenData {
@@ -116,7 +118,7 @@ export class AuthService {
 
   private verifyTwoFactorAuthenticationCode(
     twoFactorAuthenticationCode: string,
-    user: UserWithPasswordHash
+    user: { twoFactorAuthenticationCode: string | null }
   ) {
     if (!user.twoFactorAuthenticationCode) {
       throw new Error('Two-factor authentication code not set for user');
@@ -146,7 +148,9 @@ export class AuthService {
   }
 
   async login(params: { email: string; password: string; res: Response }) {
-    const user = await this.userRepository.findByEmail(params.email);
+    const user = await this.userRepository.findByEmailWithPasswordHash(
+      params.email
+    );
 
     if (!user) {
       throw new WrongCredentialsException();
@@ -169,14 +173,16 @@ export class AuthService {
 
     this.logger.info('User logged in', { userId: authenticatedUser.id });
 
+    const publicUser = stripPasswordHash(authenticatedUser);
+
     if (authenticatedUser.isTwoFactorAuthenticationEnabled) {
       return {
-        ...authenticatedUser,
+        ...publicUser,
         isTwoFactorAuthenticationEnabled: true,
       };
     }
 
-    return { ...authenticatedUser, token: tokenData.token };
+    return { ...publicUser, token: tokenData.token };
   }
 
   async changePassword(params: {
@@ -184,7 +190,8 @@ export class AuthService {
     currentPassword: string;
     newPassword: string;
   }) {
-    const userWithPassword = await this.userRepository.findById(params.userId);
+    const userWithPassword =
+      await this.userRepository.findByIdWithPasswordHash(params.userId);
 
     if (!userWithPassword) {
       throw new WrongCredentialsException();
@@ -271,7 +278,7 @@ export class AuthService {
   async enableTwoFactor(params: {
     userId: string;
     code: string;
-    user: UserWithPasswordHash;
+    user: { twoFactorAuthenticationCode: string | null };
   }) {
     const isCodeValid = this.verifyTwoFactorAuthenticationCode(
       params.code,
@@ -290,7 +297,7 @@ export class AuthService {
   }
 
   async authenticateTwoFactor(params: {
-    user: UserWithPasswordHash;
+    user: User;
     code: string;
     res: Response;
   }) {

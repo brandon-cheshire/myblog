@@ -20,8 +20,7 @@ export const authRouter = s.router(authContract, {
         },
         res: ctx.res,
       });
-      const { password_hash: _, ...body } = userResponse;
-      return { status: 200 as const, body };
+      return { status: 200 as const, body: userResponse };
     } catch (error) {
       return handleControllerError(error, {
         logger,
@@ -37,8 +36,7 @@ export const authRouter = s.router(authContract, {
         password: ctx.body.password,
         res: ctx.res,
       });
-      const { password_hash: _, ...body } = userResponse;
-      return { status: 200 as const, body };
+      return { status: 200 as const, body: userResponse };
     } catch (error) {
       return handleControllerError(error, {
         logger,
@@ -120,8 +118,7 @@ export const authRouter = s.router(authContract, {
   getCurrentUser: async (ctx) => {
     try {
       const user = await getAuthenticatedUser(ctx);
-      const { password_hash: _, ...body } = user;
-      return { status: 200 as const, body };
+      return { status: 200 as const, body: user };
     } catch (error) {
       return handleControllerError(error, {
         logger,
@@ -175,8 +172,7 @@ export const authRouter = s.router(authContract, {
         code: ctx.body.twoFactorAuthenticationCode,
         res: ctx.res,
       });
-      const { password_hash: _, ...body } = userResponse;
-      return { status: 200 as const, body };
+      return { status: 200 as const, body: userResponse };
     } catch (error) {
       return handleControllerError(error, {
         logger,

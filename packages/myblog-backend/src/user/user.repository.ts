@@ -1,41 +1,79 @@
 import { randomUUID } from 'node:crypto';
 import { db } from '../utils/database';
-import type { User, UserTable } from '../database/types';
+import type { UserTable } from '../database/types';
 import type { Updateable } from 'kysely';
-import type { UserStatusType } from '@myblog/shared';
+import type { UserStatusType, User } from '@myblog/shared';
 import { UniqueConstraintViolationException } from '../common/database.errors';
+import type { UserWithPasswordHash } from './user.types';
+
+const PUBLIC_USER_COLUMNS = [
+  'id',
+  'name',
+  'email',
+  'username',
+  'profilePicture',
+  'isTwoFactorAuthenticationEnabled',
+  'twoFactorAuthenticationCode',
+  'status',
+  'verificationCode',
+  'verificationCodeExpiresAt',
+  'createdAt',
+  'updatedAt',
+] as const;
 
 export class UserRepository {
   async findByEmail(email: string): Promise<User | undefined> {
     const user = await db
       .selectFrom('User')
       .where('email', '=', email)
+      .select(PUBLIC_USER_COLUMNS)
+      .executeTakeFirst();
+
+    return user as User | undefined;
+  }
+
+  async findByEmailWithPasswordHash(
+    email: string
+  ): Promise<UserWithPasswordHash | undefined> {
+    const user = await db
+      .selectFrom('User')
+      .where('email', '=', email)
       .selectAll()
       .executeTakeFirst();
 
-    return user;
+    return user as UserWithPasswordHash | undefined;
   }
 
   async findById(id: string): Promise<User | undefined> {
     const user = await db
       .selectFrom('User')
       .where('id', '=', id)
+      .select(PUBLIC_USER_COLUMNS)
+      .executeTakeFirst();
+
+    return user as User | undefined;
+  }
+
+  async findByIdWithPasswordHash(
+    id: string
+  ): Promise<UserWithPasswordHash | undefined> {
+    const user = await db
+      .selectFrom('User')
+      .where('id', '=', id)
       .selectAll()
       .executeTakeFirst();
 
-    return user;
+    return user as UserWithPasswordHash | undefined;
   }
 
-  async findByUsername(
-    username: string
-  ): Promise<User | undefined> {
+  async findByUsername(username: string): Promise<User | undefined> {
     const user = await db
       .selectFrom('User')
       .where('username', '=', username)
-      .selectAll()
+      .select(PUBLIC_USER_COLUMNS)
       .executeTakeFirst();
 
-    return user;
+    return user as User | undefined;
   }
 
   async create(userData: {
@@ -44,7 +82,7 @@ export class UserRepository {
     password_hash: string;
     status?: UserStatusType;
     username?: string | null;
-  }): Promise<User> {
+  }): Promise<UserWithPasswordHash> {
     const userId = randomUUID();
     const now = new Date().toISOString();
     const newUser = await db
@@ -62,7 +100,7 @@ export class UserRepository {
       .returningAll()
       .executeTakeFirstOrThrow();
 
-    return newUser;
+    return newUser as UserWithPasswordHash;
   }
 
   async update(params: {
