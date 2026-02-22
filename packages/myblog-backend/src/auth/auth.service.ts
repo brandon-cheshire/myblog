@@ -16,7 +16,7 @@ import {
   WrongAuthenticationTokenException,
   UserNotActiveException,
 } from './auth.errors';
-import type { User } from '../database/types';
+import type { UserWithPasswordHash } from '../user/user.types';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 
 export interface TokenData {
@@ -34,7 +34,10 @@ export class AuthService {
   private userRepository = new UserRepository();
   private userService = new UserService();
 
-  private authenticateUser(user: User, password: string): User {
+  private authenticateUser(
+    user: UserWithPasswordHash,
+    password: string
+  ): UserWithPasswordHash {
     if (user.status === 'password_reset_required') {
       throw new PasswordResetRequiredException();
     }
@@ -48,12 +51,11 @@ export class AuthService {
       throw new WrongCredentialsException();
     }
 
-    const { password_hash: _, ...result } = user;
-    return result as User;
+    return user;
   }
 
   private createToken(
-    user: User,
+    user: { id: string },
     isSecondFactorAuthenticated = false
   ): TokenData {
     const expiresIn = 60 * 60; // an hour
@@ -114,7 +116,7 @@ export class AuthService {
 
   private verifyTwoFactorAuthenticationCode(
     twoFactorAuthenticationCode: string,
-    user: User
+    user: UserWithPasswordHash
   ) {
     if (!user.twoFactorAuthenticationCode) {
       throw new Error('Two-factor authentication code not set for user');
@@ -134,23 +136,13 @@ export class AuthService {
     };
     res: Response;
   }) {
-    const user = await this.userService.register(params.userData);
+    const user = await this.userService.create(params.userData);
 
     const tokenData = this.createToken(user);
     this.setCookie(params.res, tokenData);
     this.logger.info('User registered', { userId: user.id });
 
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      username: user.username || undefined,
-      profilePicture: user.profilePicture,
-      status: user.status,
-      createdAt: user.createdAt.toISOString(),
-      isTwoFactorEnabled: user.isTwoFactorAuthenticationEnabled,
-      token: tokenData.token,
-    };
+    return { ...user, token: tokenData.token };
   }
 
   async login(params: { email: string; password: string; res: Response }) {
@@ -177,22 +169,14 @@ export class AuthService {
 
     this.logger.info('User logged in', { userId: authenticatedUser.id });
 
-    const userResponse = {
-      id: authenticatedUser.id,
-      name: authenticatedUser.name,
-      email: authenticatedUser.email,
-      username: authenticatedUser.username || undefined,
-      profilePicture: authenticatedUser.profilePicture,
-      status: authenticatedUser.status,
-      createdAt: authenticatedUser.createdAt.toISOString(),
-      isTwoFactorEnabled: authenticatedUser.isTwoFactorAuthenticationEnabled,
-    };
-
     if (authenticatedUser.isTwoFactorAuthenticationEnabled) {
-      return { ...userResponse, isTwoFactorAuthenticationEnabled: true };
+      return {
+        ...authenticatedUser,
+        isTwoFactorAuthenticationEnabled: true,
+      };
     }
 
-    return { ...userResponse, token: tokenData.token };
+    return { ...authenticatedUser, token: tokenData.token };
   }
 
   async changePassword(params: {
@@ -287,7 +271,7 @@ export class AuthService {
   async enableTwoFactor(params: {
     userId: string;
     code: string;
-    user: User;
+    user: UserWithPasswordHash;
   }) {
     const isCodeValid = this.verifyTwoFactorAuthenticationCode(
       params.code,
@@ -306,7 +290,7 @@ export class AuthService {
   }
 
   async authenticateTwoFactor(params: {
-    user: User;
+    user: UserWithPasswordHash;
     code: string;
     res: Response;
   }) {
@@ -323,15 +307,6 @@ export class AuthService {
 
     this.logger.info('2FA authenticated', { userId: params.user.id });
 
-    return {
-      id: params.user.id,
-      name: params.user.name,
-      email: params.user.email,
-      profilePicture: params.user.profilePicture,
-      status: params.user.status,
-      createdAt: params.user.createdAt.toISOString(),
-      isTwoFactorEnabled: params.user.isTwoFactorAuthenticationEnabled,
-      token: tokenData.token,
-    };
+    return { ...params.user, token: tokenData.token };
   }
 }

@@ -38,7 +38,7 @@ async function seed() {
   }
 
   try {
-    await userService.register({ name, email, password });
+    await userService.create({ name, email, password });
     console.log(`Seeded user: ${email}`);
   } catch (err) {
     if (err instanceof UserWithThatEmailAlreadyExistsException) {

@@ -17,10 +17,23 @@ const userService = new UserService();
 const postService = new PostService();
 
 export const userRouter = s.router(userContract, {
+  createUser: async (ctx) => {
+    try {
+      const user = await userService.create(ctx.body);
+      const { password_hash: _, ...body } = user;
+      return { status: 201 as const, body };
+    } catch (error) {
+      return handleControllerError(error, {
+        logger,
+        context: 'createUser',
+      }) as never;
+    }
+  },
   getUser: async (ctx) => {
     try {
       const user = await userService.getUserById(ctx.params.id);
-      return { status: 200 as const, body: user };
+      const { password_hash: _, ...body } = user;
+      return { status: 200 as const, body };
     } catch (error) {
       return handleControllerError(error, {
         logger,
@@ -32,7 +45,8 @@ export const userRouter = s.router(userContract, {
   getUserByUsername: async (ctx) => {
     try {
       const user = await userService.getUserByUsername(ctx.params.username);
-      return { status: 200 as const, body: user };
+      const { password_hash: _, ...body } = user;
+      return { status: 200 as const, body };
     } catch (error) {
       return handleControllerError(error, {
         logger,
@@ -49,7 +63,8 @@ export const userRouter = s.router(userContract, {
         userId: user.id,
         username,
       });
-      return { status: 200 as const, body: updatedUser };
+      const { password_hash: _, ...body } = updatedUser;
+      return { status: 200 as const, body };
     } catch (error) {
       return handleControllerError(error, {
         logger,

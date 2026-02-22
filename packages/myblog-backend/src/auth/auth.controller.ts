@@ -20,10 +20,7 @@ export const authRouter = s.router(authContract, {
         },
         res: ctx.res,
       });
-      const body = {
-        ...userResponse,
-        profilePicture: userResponse.profilePicture ?? undefined,
-      };
+      const { password_hash: _, ...body } = userResponse;
       return { status: 200 as const, body };
     } catch (error) {
       return handleControllerError(error, {
@@ -40,12 +37,7 @@ export const authRouter = s.router(authContract, {
         password: ctx.body.password,
         res: ctx.res,
       });
-      const body = {
-        ...userResponse,
-        profilePicture:
-          (userResponse as { profilePicture?: string | null }).profilePicture ??
-          undefined,
-      };
+      const { password_hash: _, ...body } = userResponse;
       return { status: 200 as const, body };
     } catch (error) {
       return handleControllerError(error, {
@@ -128,18 +120,8 @@ export const authRouter = s.router(authContract, {
   getCurrentUser: async (ctx) => {
     try {
       const user = await getAuthenticatedUser(ctx);
-      return {
-        status: 200 as const,
-        body: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          username: user.username ?? undefined,
-          profilePicture: user.profilePicture ?? undefined,
-          createdAt: user.createdAt.toISOString(),
-          isTwoFactorEnabled: user.isTwoFactorAuthenticationEnabled,
-        },
-      };
+      const { password_hash: _, ...body } = user;
+      return { status: 200 as const, body };
     } catch (error) {
       return handleControllerError(error, {
         logger,
@@ -193,10 +175,7 @@ export const authRouter = s.router(authContract, {
         code: ctx.body.twoFactorAuthenticationCode,
         res: ctx.res,
       });
-      const body = {
-        ...userResponse,
-        profilePicture: userResponse.profilePicture ?? undefined,
-      };
+      const { password_hash: _, ...body } = userResponse;
       return { status: 200 as const, body };
     } catch (error) {
       return handleControllerError(error, {

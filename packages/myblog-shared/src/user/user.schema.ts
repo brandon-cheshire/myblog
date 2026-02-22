@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidPassword } from '../utils/validation.utils';
 
 // User status types
 export const userStatusTypeSchema = z.enum([
@@ -23,6 +24,18 @@ export const usernameSchema = z
     message: 'Username cannot contain consecutive dots',
   });
 
+  // DTO for creating a user (registration page: name → username, email, password)
+export const CreateUserDtoSchema = z.object({
+    name: z.string().min(1, 'Name is required'),
+    email: z.string().min(1, 'Email is required'),
+    password: z.string().min(1, 'Password is required').refine(isValidPassword, {
+      message:
+        'Password must be at least 10 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character',
+    }),
+  });
+  
+  export type CreateUserDto = z.infer<typeof CreateUserDtoSchema>;
+  
 // Comprehensive user schema with all fields
 export const UserSchema = z.object({
   id: z.string(),
@@ -35,25 +48,13 @@ export const UserSchema = z.object({
   status: userStatusTypeSchema,
   verificationCode: z.string().nullable(),
   verificationCodeExpiresAt: z.date().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date().nullable(),
 });
 
 export type User = z.infer<typeof UserSchema>;
 
-import { isValidPassword } from '../utils/validation.utils';
-
-// Registration schema (subset for user creation)
-export const userRegistrationSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().min(1, 'Email is required'),
-  password: z.string().min(1, 'Password is required').refine(isValidPassword, {
-    message:
-      'Password must be at least 10 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character',
-  }),
-});
-
-export type UserRegistration = z.infer<typeof userRegistrationSchema>;
+export type UserResponse = User;
 
 // Login schema
 export const userLoginSchema = z.object({
@@ -62,20 +63,6 @@ export const userLoginSchema = z.object({
 });
 
 export type UserLogin = z.infer<typeof userLoginSchema>;
-
-// API response shape (serialized, no sensitive fields). Use this for any user data returned to clients.
-export const userResponseSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  email: z.string(),
-  username: z.string().nullable().optional(),
-  profilePicture: z.string().optional(),
-  createdAt: z.string().optional(),
-  isTwoFactorEnabled: z.boolean().optional(),
-  status: userStatusTypeSchema.optional(),
-});
-
-export type UserResponse = z.infer<typeof userResponseSchema>;
 
 // Username update schema
 export const updateUsernameSchema = z.object({

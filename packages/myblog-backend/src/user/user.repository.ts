@@ -62,8 +62,7 @@ export class UserRepository {
       .returningAll()
       .executeTakeFirstOrThrow();
 
-    const { password_hash: _, ...user } = newUser;
-    return user as User;
+    return newUser;
   }
 
   async update(params: {

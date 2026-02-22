@@ -8,7 +8,6 @@ import {
   UsernameAlreadyTakenException,
 } from './user.errors';
 import type { User } from '../database/types';
-import type { UserResponse } from '@myblog/shared';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 import {
   minioClient,
@@ -73,7 +72,7 @@ export class UserService {
     return candidate;
   }
 
-  async register(userData: {
+  async create(userData: {
     name: string;
     email: string;
     password: string;
@@ -100,38 +99,20 @@ export class UserService {
     return newUser;
   }
 
-  async getUserById(id: string) {
+  async getUserById(id: string): Promise<User> {
     const user = await this.userRepository.findById(id);
     if (!user) {
       throw new UserNotFoundException(id);
     }
-
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      username: user.username || undefined,
-      profilePicture: user.profilePicture || undefined,
-      createdAt: user.createdAt?.toISOString(),
-      isTwoFactorEnabled: user.isTwoFactorAuthenticationEnabled,
-    };
+    return user;
   }
 
-  async getUserByUsername(username: string) {
+  async getUserByUsername(username: string): Promise<User> {
     const user = await this.userRepository.findByUsername(username);
     if (!user) {
       throw new UserNotFoundException(username);
     }
-
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      username: user.username || undefined,
-      profilePicture: user.profilePicture || undefined,
-      createdAt: user.createdAt?.toISOString(),
-      isTwoFactorEnabled: user.isTwoFactorAuthenticationEnabled,
-    };
+    return user;
   }
 
   async updateUsername(params: { userId: string; username: string }) {
