@@ -3,7 +3,8 @@ import { postContract } from '@myblog/shared';
 import { getAuthenticatedUser } from '../utils/auth.helper';
 import { PostService } from './post.service';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
-import { handleControllerError } from '../utils/controller-conventions';
+import { serializeError } from '../common/utils/serializeError';
+import { PostNotFoundException, NotAuthorizedException } from './post.errors';
 
 const s = initServer();
 const logger = new AppLogger('PostController');
@@ -15,10 +16,11 @@ export const postRouter = s.router(postContract, {
       const posts = await postService.getAllPosts();
       return { status: 200 as const, body: posts };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'getPosts',
-      }) as never;
+      logger.error({ message: 'Error fetching posts', error });
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -27,10 +29,22 @@ export const postRouter = s.router(postContract, {
       const post = await postService.getPostById(ctx.params.id);
       return { status: 200 as const, body: post };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'getPost',
-      }) as never;
+      if (error instanceof PostNotFoundException) {
+        logger.warn('Post not found', { id: ctx.params.id });
+        return {
+          status: 404 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error fetching post', error },
+        { id: ctx.params.id }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -44,11 +58,22 @@ export const postRouter = s.router(postContract, {
       });
       return { status: 201 as const, body: post };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'createPost',
-        validationMessage: 'Invalid data',
-      }) as never;
+      if (error instanceof NotAuthorizedException) {
+        logger.warn('Not authorized to create post', {});
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error creating post', error },
+        { title: ctx.body.title }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -65,10 +90,30 @@ export const postRouter = s.router(postContract, {
       });
       return { status: 200 as const, body: post };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'updatePost',
-      }) as never;
+      if (error instanceof PostNotFoundException) {
+        logger.warn('Post not found for update', { id: ctx.params.id });
+        return {
+          status: 404 as const,
+          body: { error: error.message },
+        };
+      }
+
+      if (error instanceof NotAuthorizedException) {
+        logger.warn('Not authorized to update post', { id: ctx.params.id });
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error updating post', error },
+        { id: ctx.params.id }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -81,10 +126,30 @@ export const postRouter = s.router(postContract, {
       });
       return { status: 200 as const, body: {} };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'deletePost',
-      }) as never;
+      if (error instanceof PostNotFoundException) {
+        logger.warn('Post not found for deletion', { id: ctx.params.id });
+        return {
+          status: 404 as const,
+          body: { error: error.message },
+        };
+      }
+
+      if (error instanceof NotAuthorizedException) {
+        logger.warn('Not authorized to delete post', { id: ctx.params.id });
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error deleting post', error },
+        { id: ctx.params.id }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 });

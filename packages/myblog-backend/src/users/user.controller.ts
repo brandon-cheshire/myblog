@@ -2,13 +2,15 @@ import { initServer } from '@ts-rest/express';
 import { userContract } from '@myblog/shared';
 import { getAuthenticatedUser } from '../utils/auth.helper';
 import { UserService } from './user.service';
+import {
+  UserNotFoundException,
+  UserWithThatEmailAlreadyExistsException,
+  UsernameAlreadyTakenException,
+} from './user.errors';
 import { PostService } from '../posts/post.service';
 import { Request, Response } from 'express';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
-import {
-  errorResponse,
-  handleControllerError,
-} from '../utils/controller-conventions';
+import { serializeError } from '../common/utils/serializeError';
 import { processMulterUpload } from '../utils/upload.utils';
 
 const s = initServer();
@@ -22,10 +24,32 @@ export const userRouter = s.router(userContract, {
       const user = await userService.create(ctx.body);
       return { status: 201 as const, body: user };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'create',
-      }) as never;
+      if (error instanceof UserWithThatEmailAlreadyExistsException) {
+        logger.warn('User creation conflict', { email: ctx.body.email });
+        return {
+          status: 409 as const,
+          body: { error: error.message },
+        };
+      }
+
+      if (error instanceof UsernameAlreadyTakenException) {
+        logger.warn('Username already taken during create', {
+          email: ctx.body.email,
+        });
+        return {
+          status: 409 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error creating user', error },
+        { email: ctx.body.email }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -34,10 +58,22 @@ export const userRouter = s.router(userContract, {
       const user = await userService.getUserById(ctx.params.id);
       return { status: 200 as const, body: user };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'getUser',
-      }) as never;
+      if (error instanceof UserNotFoundException) {
+        logger.warn('User not found', { id: ctx.params.id });
+        return {
+          status: 404 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error fetching user', error },
+        { id: ctx.params.id }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -46,10 +82,24 @@ export const userRouter = s.router(userContract, {
       const user = await userService.getUserByUsername(ctx.params.username);
       return { status: 200 as const, body: user };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'getUserByUsername',
-      }) as never;
+      if (error instanceof UserNotFoundException) {
+        logger.warn('User not found by username', {
+          username: ctx.params.username,
+        });
+        return {
+          status: 404 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error fetching user by username', error },
+        { username: ctx.params.username }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -63,10 +113,33 @@ export const userRouter = s.router(userContract, {
       });
       return { status: 200 as const, body: updatedUser };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'updateUsername',
-      }) as never;
+      if (error instanceof UserNotFoundException) {
+        logger.warn('User not found for username update', { userId: ctx.body });
+        return {
+          status: 404 as const,
+          body: { error: error.message },
+        };
+      }
+
+      if (error instanceof UsernameAlreadyTakenException) {
+        logger.warn('Username already taken during update', {
+          userId: ctx.body,
+          username: ctx.body.username,
+        });
+        return {
+          status: 409 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error updating username', error },
+        { userId: ctx.body }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -77,10 +150,14 @@ export const userRouter = s.router(userContract, {
       const posts = await postService.getPostsByAuthorId(userId);
       return { status: 200 as const, body: posts };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'getUserPosts',
-      }) as never;
+      logger.error(
+        { message: 'Error fetching user posts', error },
+        { id: ctx.params.id }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -97,15 +174,27 @@ export const userRouter = s.router(userContract, {
       } catch (uploadError: unknown) {
         const err = uploadError as { message?: string; code?: string };
         if (err.message === 'No file uploaded') {
-          return errorResponse(400, 'No file uploaded');
+          return {
+            status: 400 as const,
+            body: { error: 'No file uploaded' },
+          };
         }
         if (err.message === 'Only image files are allowed') {
-          return errorResponse(400, 'Only image files are allowed');
+          return {
+            status: 400 as const,
+            body: { error: 'Only image files are allowed' },
+          };
         }
         if (err.code === 'LIMIT_FILE_SIZE') {
-          return errorResponse(400, 'File size exceeds 5MB limit');
+          return {
+            status: 400 as const,
+            body: { error: 'File size exceeds 5MB limit' },
+          };
         }
-        return errorResponse(400, err.message ?? 'File upload failed');
+        return {
+          status: 400 as const,
+          body: { error: err.message ?? 'File upload failed' },
+        };
       }
 
       const result = await userService.uploadProfilePicture({
@@ -114,10 +203,14 @@ export const userRouter = s.router(userContract, {
       });
       return { status: 200 as const, body: result };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'uploadProfilePicture',
-      }) as never;
+      logger.error(
+        { message: 'Error uploading profile picture', error },
+        { userId: (await getAuthenticatedUser(ctx)).id }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 });

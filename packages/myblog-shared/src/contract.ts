@@ -35,6 +35,8 @@ export const userContract = c.router({
           )
           .optional(),
       }),
+      409: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Create a new user (name used for username, email, password)',
   },
@@ -44,6 +46,8 @@ export const userContract = c.router({
     pathParams: z.object({ id: z.string() }),
     responses: {
       200: UserSchema,
+      404: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Get a user by id',
   },
@@ -53,7 +57,9 @@ export const userContract = c.router({
     pathParams: z.object({ id: z.string() }),
     responses: {
       200: z.array(postResponseSchema),
+      401: z.object({ error: z.string() }),
       403: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Get posts by a specific user',
   },
@@ -78,7 +84,9 @@ export const userContract = c.router({
       200: UserSchema,
       400: z.object({ error: z.string() }),
       401: z.object({ error: z.string() }),
+      404: z.object({ error: z.string() }),
       409: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Update user username',
   },
@@ -89,6 +97,7 @@ export const userContract = c.router({
     responses: {
       200: UserSchema,
       404: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Get a user by username',
   },
@@ -100,6 +109,7 @@ export const postContract = c.router({
     path: '/posts',
     responses: {
       200: z.array(postResponseSchema),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Get all posts',
   },
@@ -109,6 +119,8 @@ export const postContract = c.router({
     pathParams: z.object({ id: z.string() }),
     responses: {
       200: postResponseSchema,
+      404: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Get a post by id',
   },
@@ -122,6 +134,8 @@ export const postContract = c.router({
         error: z.string(),
         details: z.array(z.object({ field: z.string(), message: z.string() })),
       }),
+      401: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Create a new post',
   },
@@ -132,6 +146,9 @@ export const postContract = c.router({
     body: postSchema.partial(),
     responses: {
       200: postResponseSchema,
+      401: z.object({ error: z.string() }),
+      404: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Update a post',
   },
@@ -141,6 +158,9 @@ export const postContract = c.router({
     pathParams: z.object({ id: z.string() }),
     responses: {
       200: z.object({}),
+      401: z.object({ error: z.string() }),
+      404: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Delete a post',
   },
@@ -153,6 +173,7 @@ export const authContract = c.router({
     responses: {
       200: UserSchema,
       401: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Get current authenticated user',
   },
@@ -173,6 +194,7 @@ export const authContract = c.router({
           )
           .optional(),
       }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Register a new user',
   },
@@ -182,6 +204,8 @@ export const authContract = c.router({
     body: loginSchema,
     responses: {
       200: UserSchema.extend({ token: z.string().optional() }),
+      401: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Login a user',
   },
@@ -200,6 +224,8 @@ export const authContract = c.router({
     body: twoFactorAuthenticationCodeSchema,
     responses: {
       200: UserSchema.extend({ token: z.string().optional() }),
+      401: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Authenticate with 2FA code',
   },
@@ -219,6 +245,7 @@ export const authContract = c.router({
     responses: {
       200: z.object({}),
       401: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Enable 2FA after verification',
   },
@@ -229,6 +256,7 @@ export const authContract = c.router({
     responses: {
       200: z.object({}),
       401: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Disable 2FA',
   },
@@ -240,6 +268,7 @@ export const authContract = c.router({
       200: z.object({ message: z.string() }),
       400: z.object({ error: z.string() }),
       401: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Change user password',
   },
@@ -249,6 +278,7 @@ export const authContract = c.router({
     body: resetPasswordSchema,
     responses: {
       200: z.object({ message: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Request password reset',
   },
@@ -260,6 +290,7 @@ export const authContract = c.router({
       200: z.object({ message: z.string() }),
       400: z.object({ error: z.string() }),
       401: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
     },
     summary: 'Confirm password reset with verification code',
   },

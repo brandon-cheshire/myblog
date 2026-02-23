@@ -1,7 +1,7 @@
 import { ZodError } from 'zod';
 import type { ErrorMessageType } from './app-logger/error-message.type';
 
-function serializeError(details: unknown): string {
+export function serializeError(details: unknown): string {
   if (details == null) {
     return 'Unknown Error';
   }

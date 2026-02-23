@@ -3,7 +3,14 @@ import { authContract } from '@myblog/shared';
 import { AuthService } from './auth.service';
 import { getAuthenticatedUser } from '../utils/auth.helper';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
-import { handleControllerError } from '../utils/controller-conventions';
+import { serializeError } from '../common/utils/serializeError';
+import {
+  AuthenticationTokenMissingException,
+  PasswordResetRequiredException,
+  UserNotActiveException,
+  WrongAuthenticationTokenException,
+  WrongCredentialsException,
+} from './auth.errors';
 
 const s = initServer();
 const logger = new AppLogger('AuthController');
@@ -22,10 +29,24 @@ export const authRouter = s.router(authContract, {
       });
       return { status: 200 as const, body: userResponse };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'register',
-      }) as never;
+      if (error instanceof WrongCredentialsException) {
+        logger.warn('Registration failed: wrong credentials', {
+          email: ctx.body.email,
+        });
+        return {
+          status: 400 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error registering user', error },
+        { email: ctx.body.email }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -38,10 +59,40 @@ export const authRouter = s.router(authContract, {
       });
       return { status: 200 as const, body: userResponse };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'login',
-      }) as never;
+      if (error instanceof WrongCredentialsException) {
+        logger.warn('Login failed: wrong credentials', {
+          email: ctx.body.email,
+        });
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+
+      if (
+        error instanceof AuthenticationTokenMissingException ||
+        error instanceof WrongAuthenticationTokenException ||
+        error instanceof PasswordResetRequiredException ||
+        error instanceof UserNotActiveException
+      ) {
+        logger.warn('Login failed due to auth error', {
+          email: ctx.body.email,
+          error: error.message,
+        });
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error logging in user', error },
+        { email: ctx.body.email }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -58,10 +109,39 @@ export const authRouter = s.router(authContract, {
         body: { message: 'Password changed successfully' },
       };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'changePassword',
-      }) as never;
+      if (error instanceof WrongCredentialsException) {
+        logger.warn('Change password failed: wrong current password', {
+          userId: (await getAuthenticatedUser(ctx)).id,
+        });
+        return {
+          status: 400 as const,
+          body: { error: error.message },
+        };
+      }
+
+      if (
+        error instanceof AuthenticationTokenMissingException ||
+        error instanceof WrongAuthenticationTokenException ||
+        error instanceof PasswordResetRequiredException ||
+        error instanceof UserNotActiveException
+      ) {
+        logger.warn('Change password failed due to auth error', {
+          error: error.message,
+        });
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error changing password', error },
+        { userId: (await getAuthenticatedUser(ctx)).id }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -70,10 +150,14 @@ export const authRouter = s.router(authContract, {
       const result = await authService.requestPasswordReset(ctx.body.email);
       return { status: 200 as const, body: result };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'resetPassword',
-      }) as never;
+      logger.error(
+        { message: 'Error requesting password reset', error },
+        { email: ctx.body.email }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -89,10 +173,24 @@ export const authRouter = s.router(authContract, {
         body: { message: 'Password reset successfully' },
       };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'resetPasswordConfirm',
-      }) as never;
+      if (error instanceof WrongCredentialsException) {
+        logger.warn('Reset password confirm failed: wrong verification code', {
+          userId: ctx.body.userId,
+        });
+        return {
+          status: 400 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error confirming password reset', error },
+        { userId: ctx.body.userId }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -120,10 +218,26 @@ export const authRouter = s.router(authContract, {
       const user = await getAuthenticatedUser(ctx);
       return { status: 200 as const, body: user };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'getCurrentUser',
-      }) as never;
+      if (
+        error instanceof AuthenticationTokenMissingException ||
+        error instanceof WrongAuthenticationTokenException ||
+        error instanceof PasswordResetRequiredException ||
+        error instanceof UserNotActiveException
+      ) {
+        logger.warn('Failed to get current user due to auth error', {
+          error: error.message,
+        });
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error({ message: 'Error getting current user', error });
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -144,10 +258,27 @@ export const authRouter = s.router(authContract, {
       });
       return { status: 200 as const, body: {} };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'turnOnTwoFactor',
-      }) as never;
+      if (
+        error instanceof AuthenticationTokenMissingException ||
+        error instanceof WrongAuthenticationTokenException
+      ) {
+        logger.warn('Turn on 2FA failed due to auth error', {
+          error: error.message,
+        });
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error turning on 2FA', error },
+        { userId: (await getAuthenticatedUser(ctx)).id }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -157,10 +288,27 @@ export const authRouter = s.router(authContract, {
       await authService.disableTwoFactor(user.id);
       return { status: 200 as const, body: {} };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'turnOffTwoFactor',
-      }) as never;
+      if (
+        error instanceof AuthenticationTokenMissingException ||
+        error instanceof WrongAuthenticationTokenException
+      ) {
+        logger.warn('Turn off 2FA failed due to auth error', {
+          error: error.message,
+        });
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error turning off 2FA', error },
+        { userId: (await getAuthenticatedUser(ctx)).id }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 
@@ -174,10 +322,27 @@ export const authRouter = s.router(authContract, {
       });
       return { status: 200 as const, body: userResponse };
     } catch (error) {
-      return handleControllerError(error, {
-        logger,
-        context: 'authenticateTwoFactor',
-      }) as never;
+      if (
+        error instanceof AuthenticationTokenMissingException ||
+        error instanceof WrongAuthenticationTokenException
+      ) {
+        logger.warn('2FA authentication failed due to auth error', {
+          error: error.message,
+        });
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+
+      logger.error(
+        { message: 'Error authenticating 2FA', error },
+        { userId: (await getAuthenticatedUser(ctx, true)).id }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
     }
   },
 });
