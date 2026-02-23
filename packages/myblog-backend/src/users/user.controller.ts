@@ -17,17 +17,18 @@ const userService = new UserService();
 const postService = new PostService();
 
 export const userRouter = s.router(userContract, {
-  createUser: async (ctx) => {
+  create: async (ctx) => {
     try {
       const user = await userService.create(ctx.body);
       return { status: 201 as const, body: user };
     } catch (error) {
       return handleControllerError(error, {
         logger,
-        context: 'createUser',
+        context: 'create',
       }) as never;
     }
   },
+
   getUser: async (ctx) => {
     try {
       const user = await userService.getUserById(ctx.params.id);

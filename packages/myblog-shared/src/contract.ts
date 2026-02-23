@@ -18,7 +18,7 @@ import {
 const c = initContract();
 
 export const userContract = c.router({
-  createUser: {
+  create: {
     method: 'POST',
     path: '/users',
     body: CreateUserDtoSchema,
