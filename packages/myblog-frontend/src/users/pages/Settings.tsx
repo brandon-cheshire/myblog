@@ -242,14 +242,14 @@ export function Settings() {
         <h3>Two-Factor Authentication</h3>
         <p className="settings-status-text">
           Status:{' '}
-          {user.isTwoFactorEnabled ? (
+          {user.isTwoFactorAuthenticationEnabled ? (
             <span className="status-enabled">Enabled</span>
           ) : (
             <span className="status-disabled">Disabled</span>
           )}
         </p>
 
-        {!user.isTwoFactorEnabled ? (
+        {!user.isTwoFactorAuthenticationEnabled ? (
           <button onClick={() => setShowSetup2FA(true)} className="edit-btn">
             Enable 2FA
           </button>
