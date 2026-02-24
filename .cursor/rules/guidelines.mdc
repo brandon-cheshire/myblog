@@ -331,6 +331,10 @@ try {
 
 ## General Practices
 
+### File Moves and Renames
+
+- Prefer moving and renaming files using command-line operations (e.g. `mv`, `git mv`) rather than rewriting entire files in new locations, to avoid unnecessary token usage and preserve file history.
+
 ### No Barrel Files
 
 Import directly from source files:
