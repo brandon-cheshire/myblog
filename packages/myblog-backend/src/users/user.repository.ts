@@ -221,10 +221,6 @@ export class UserRepository {
     }
   }
 
-  async deleteById(id: string): Promise<void> {
-    await db.deleteFrom('User').where('id', '=', id).execute();
-  }
-
   async isUsernameTaken(params: {
     username: string;
     excludeUserId?: string;

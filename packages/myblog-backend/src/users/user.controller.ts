@@ -7,10 +7,6 @@ import {
   UserWithThatEmailAlreadyExistsException,
   UsernameAlreadyTakenException,
 } from './user.errors';
-import {
-  AuthenticationTokenMissingException,
-  WrongAuthenticationTokenException,
-} from '../auth/auth.errors';
 import { PostService } from '../posts/post.service';
 import { Request, Response } from 'express';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
@@ -59,11 +55,11 @@ export const userRouter = s.router(userContract, {
 
   getUser: async (ctx) => {
     try {
-      const user = await userService.getUserById(ctx.params.userId);
+      const user = await userService.getUserById(ctx.params.id);
       return { status: 200 as const, body: user };
     } catch (error) {
       if (error instanceof UserNotFoundException) {
-        logger.warn('User not found', { userId: ctx.params.userId });
+        logger.warn('User not found', { id: ctx.params.id });
         return {
           status: 404 as const,
           body: { error: error.message },
@@ -72,7 +68,7 @@ export const userRouter = s.router(userContract, {
 
       logger.error(
         { message: 'Error fetching user', error },
-        { userId: ctx.params.userId }
+        { id: ctx.params.id }
       );
       return {
         status: 500 as const,
@@ -150,53 +146,13 @@ export const userRouter = s.router(userContract, {
   getUserPosts: async (ctx) => {
     try {
       await getAuthenticatedUser(ctx);
-      const userId = ctx.params.userId;
+      const userId = ctx.params.id;
       const posts = await postService.getPostsByAuthorId(userId);
       return { status: 200 as const, body: posts };
     } catch (error) {
       logger.error(
         { message: 'Error fetching user posts', error },
-        { userId: ctx.params.userId }
-      );
-      return {
-        status: 500 as const,
-        body: { error: serializeError(error) },
-      };
-    }
-  },
-
-  delete: async (ctx) => {
-    try {
-      const user = await getAuthenticatedUser(ctx);
-      const targetId = ctx.params.userId;
-      if (user.id !== targetId) {
-        return {
-          status: 403 as const,
-          body: { error: 'You can only delete your own account' },
-        };
-      }
-      await userService.deleteUser(targetId);
-      return { status: 204 as const, body: undefined };
-    } catch (error) {
-      if (
-        error instanceof AuthenticationTokenMissingException ||
-        error instanceof WrongAuthenticationTokenException
-      ) {
-        return {
-          status: 401 as const,
-          body: { error: error.message },
-        };
-      }
-      if (error instanceof UserNotFoundException) {
-        logger.warn('User not found for delete', { userId: ctx.params.userId });
-        return {
-          status: 404 as const,
-          body: { error: error.message },
-        };
-      }
-      logger.error(
-        { message: 'Error deleting user', error },
-        { userId: ctx.params.userId }
+        { id: ctx.params.id }
       );
       return {
         status: 500 as const,
