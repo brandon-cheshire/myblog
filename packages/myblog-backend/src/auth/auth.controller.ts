@@ -69,15 +69,36 @@ export const authRouter = s.router(authContract, {
         };
       }
 
-      if (
-        error instanceof AuthenticationTokenMissingException ||
-        error instanceof WrongAuthenticationTokenException ||
-        error instanceof PasswordResetRequiredException ||
-        error instanceof UserNotActiveException
-      ) {
-        logger.warn('Login failed due to auth error', {
+      if (error instanceof AuthenticationTokenMissingException) {
+        logger.warn('Login failed: authentication token missing', {
           email: ctx.body.email,
-          error: error.message,
+        });
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof WrongAuthenticationTokenException) {
+        logger.warn('Login failed: wrong authentication token', {
+          email: ctx.body.email,
+        });
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof PasswordResetRequiredException) {
+        logger.warn('Login failed: password reset required', {
+          email: ctx.body.email,
+        });
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof UserNotActiveException) {
+        logger.warn('Login failed: user not active', {
+          email: ctx.body.email,
         });
         return {
           status: 401 as const,
@@ -119,15 +140,29 @@ export const authRouter = s.router(authContract, {
         };
       }
 
-      if (
-        error instanceof AuthenticationTokenMissingException ||
-        error instanceof WrongAuthenticationTokenException ||
-        error instanceof PasswordResetRequiredException ||
-        error instanceof UserNotActiveException
-      ) {
-        logger.warn('Change password failed due to auth error', {
-          error: error.message,
-        });
+      if (error instanceof AuthenticationTokenMissingException) {
+        logger.warn('Change password failed: authentication token missing');
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof WrongAuthenticationTokenException) {
+        logger.warn('Change password failed: wrong authentication token');
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof PasswordResetRequiredException) {
+        logger.warn('Change password failed: password reset required');
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof UserNotActiveException) {
+        logger.warn('Change password failed: user not active');
         return {
           status: 401 as const,
           body: { error: error.message },
@@ -218,15 +253,29 @@ export const authRouter = s.router(authContract, {
       const user = await getAuthenticatedUser(ctx);
       return { status: 200 as const, body: user };
     } catch (error) {
-      if (
-        error instanceof AuthenticationTokenMissingException ||
-        error instanceof WrongAuthenticationTokenException ||
-        error instanceof PasswordResetRequiredException ||
-        error instanceof UserNotActiveException
-      ) {
-        logger.warn('Failed to get current user due to auth error', {
-          error: error.message,
-        });
+      if (error instanceof AuthenticationTokenMissingException) {
+        logger.warn('Get current user failed: authentication token missing');
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof WrongAuthenticationTokenException) {
+        logger.warn('Get current user failed: wrong authentication token');
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof PasswordResetRequiredException) {
+        logger.warn('Get current user failed: password reset required');
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof UserNotActiveException) {
+        logger.warn('Get current user failed: user not active');
         return {
           status: 401 as const,
           body: { error: error.message },
@@ -258,13 +307,15 @@ export const authRouter = s.router(authContract, {
       });
       return { status: 200 as const, body: {} };
     } catch (error) {
-      if (
-        error instanceof AuthenticationTokenMissingException ||
-        error instanceof WrongAuthenticationTokenException
-      ) {
-        logger.warn('Turn on 2FA failed due to auth error', {
-          error: error.message,
-        });
+      if (error instanceof AuthenticationTokenMissingException) {
+        logger.warn('Turn on 2FA failed: authentication token missing');
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof WrongAuthenticationTokenException) {
+        logger.warn('Turn on 2FA failed: wrong authentication token');
         return {
           status: 401 as const,
           body: { error: error.message },
@@ -288,13 +339,15 @@ export const authRouter = s.router(authContract, {
       await authService.disableTwoFactor(user.id);
       return { status: 200 as const, body: {} };
     } catch (error) {
-      if (
-        error instanceof AuthenticationTokenMissingException ||
-        error instanceof WrongAuthenticationTokenException
-      ) {
-        logger.warn('Turn off 2FA failed due to auth error', {
-          error: error.message,
-        });
+      if (error instanceof AuthenticationTokenMissingException) {
+        logger.warn('Turn off 2FA failed: authentication token missing');
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof WrongAuthenticationTokenException) {
+        logger.warn('Turn off 2FA failed: wrong authentication token');
         return {
           status: 401 as const,
           body: { error: error.message },
@@ -322,13 +375,15 @@ export const authRouter = s.router(authContract, {
       });
       return { status: 200 as const, body: userResponse };
     } catch (error) {
-      if (
-        error instanceof AuthenticationTokenMissingException ||
-        error instanceof WrongAuthenticationTokenException
-      ) {
-        logger.warn('2FA authentication failed due to auth error', {
-          error: error.message,
-        });
+      if (error instanceof AuthenticationTokenMissingException) {
+        logger.warn('2FA authentication failed: authentication token missing');
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof WrongAuthenticationTokenException) {
+        logger.warn('2FA authentication failed: wrong authentication token');
         return {
           status: 401 as const,
           body: { error: error.message },
