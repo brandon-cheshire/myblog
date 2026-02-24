@@ -42,8 +42,8 @@ export const userContract = c.router({
   },
   getUser: {
     method: 'GET',
-    path: '/users/:id',
-    pathParams: z.object({ id: z.string() }),
+    path: '/users/:userId',
+    pathParams: z.object({ userId: z.string() }),
     responses: {
       200: UserSchema,
       404: z.object({ error: z.string() }),
@@ -53,8 +53,8 @@ export const userContract = c.router({
   },
   getUserPosts: {
     method: 'GET',
-    path: '/users/:id/posts',
-    pathParams: z.object({ id: z.string() }),
+    path: '/users/:userId/posts',
+    pathParams: z.object({ userId: z.string() }),
     responses: {
       200: z.array(postResponseSchema),
       401: z.object({ error: z.string() }),
@@ -100,6 +100,19 @@ export const userContract = c.router({
       500: z.object({ error: z.string() }),
     },
     summary: 'Get a user by username',
+  },
+  delete: {
+    method: 'DELETE',
+    path: '/users/:userId',
+    pathParams: z.object({ userId: z.string() }),
+    responses: {
+      204: z.undefined(),
+      401: z.object({ error: z.string() }),
+      403: z.object({ error: z.string() }),
+      404: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
+    },
+    summary: 'Delete the authenticated user (own account only)',
   },
 });
 

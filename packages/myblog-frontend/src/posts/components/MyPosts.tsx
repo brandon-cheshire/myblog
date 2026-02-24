@@ -29,8 +29,8 @@ export function MyPosts({ userId }: MyPostsProps) {
       userPostsRefreshKey,
     ],
     queryData: targetUserId
-      ? { params: { id: targetUserId } }
-      : ({} as { params: { id: string } }),
+      ? { params: { userId: targetUserId } }
+      : ({} as { params: { userId: string } }),
     enabled: !!targetUserId,
     staleTime: 30_000,
   });
