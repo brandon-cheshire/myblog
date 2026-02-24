@@ -208,8 +208,7 @@ export const userRouter = s.router(userContract, {
       return { status: 200 as const, body: result };
     } catch (error) {
       logger.error(
-        { message: 'Error uploading profile picture', error },
-        { userId: (await getAuthenticatedUser(ctx)).id }
+        { message: 'Error uploading profile picture', error }
       );
       return {
         status: 500 as const,

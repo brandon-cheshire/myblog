@@ -131,9 +131,7 @@ export const authRouter = s.router(authContract, {
       };
     } catch (error) {
       if (error instanceof WrongCredentialsException) {
-        logger.warn('Change password failed: wrong current password', {
-          userId: (await getAuthenticatedUser(ctx)).id,
-        });
+        logger.warn('Change password failed: wrong current password');
         return {
           status: 400 as const,
           body: { error: error.message },
@@ -169,10 +167,7 @@ export const authRouter = s.router(authContract, {
         };
       }
 
-      logger.error(
-        { message: 'Error changing password', error },
-        { userId: (await getAuthenticatedUser(ctx)).id }
-      );
+      logger.error({ message: 'Error changing password', error });
       return {
         status: 500 as const,
         body: { error: serializeError(error) },
@@ -322,10 +317,7 @@ export const authRouter = s.router(authContract, {
         };
       }
 
-      logger.error(
-        { message: 'Error turning on 2FA', error },
-        { userId: (await getAuthenticatedUser(ctx)).id }
-      );
+      logger.error({ message: 'Error turning on 2FA', error });
       return {
         status: 500 as const,
         body: { error: serializeError(error) },
@@ -354,10 +346,7 @@ export const authRouter = s.router(authContract, {
         };
       }
 
-      logger.error(
-        { message: 'Error turning off 2FA', error },
-        { userId: (await getAuthenticatedUser(ctx)).id }
-      );
+      logger.error({ message: 'Error turning off 2FA', error });
       return {
         status: 500 as const,
         body: { error: serializeError(error) },
@@ -390,10 +379,7 @@ export const authRouter = s.router(authContract, {
         };
       }
 
-      logger.error(
-        { message: 'Error authenticating 2FA', error },
-        { userId: (await getAuthenticatedUser(ctx, true)).id }
-      );
+      logger.error({ message: 'Error authenticating 2FA', error });
       return {
         status: 500 as const,
         body: { error: serializeError(error) },

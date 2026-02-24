@@ -35,6 +35,45 @@ export class AuthService {
   private userRepository = new UserRepository();
   private userService = new UserService();
 
+  async getUserFromToken(params: {
+    token: string;
+    omitSecondFactor?: boolean;
+  }): Promise<User> {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error('JWT_SECRET is not defined');
+    }
+
+    try {
+      const verificationResponse = jwt.verify(
+        params.token,
+        secret
+      ) as unknown as DataStoredInToken;
+      const { _id: id, isSecondFactorAuthenticated } = verificationResponse;
+      const user = await this.userRepository.findById(id);
+
+      if (!user) {
+        throw new WrongAuthenticationTokenException();
+      }
+
+      if (
+        !params.omitSecondFactor &&
+        user.isTwoFactorAuthenticationEnabled &&
+        !isSecondFactorAuthenticated
+      ) {
+        throw new WrongAuthenticationTokenException();
+      }
+
+      return user;
+    } catch (error) {
+      if (error instanceof WrongAuthenticationTokenException) {
+        throw error;
+      }
+
+      throw new WrongAuthenticationTokenException();
+    }
+  }
+
   /** Verifies password against hash, then strips hash. Callers only ever receive User. */
   private authenticateUser(
     user: UserWithPasswordHash,
