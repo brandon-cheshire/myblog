@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 import type { Request } from 'express';
-import { DataStoredInToken } from '../auth/auth.service';
+import { DataStoredInToken } from './auth.service';
 import {
   WrongAuthenticationTokenException,
   AuthenticationTokenMissingException,
-} from '../auth/auth.errors';
+} from './auth.errors';
 import type { User } from '@myblog/shared';
 import { UserRepository } from '../users/user.repository';
 
@@ -67,3 +67,4 @@ export async function getAuthenticatedUser(
     throw new WrongAuthenticationTokenException();
   }
 }
+

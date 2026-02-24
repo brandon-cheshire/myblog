@@ -1,6 +1,6 @@
 import { initServer } from '@ts-rest/express';
 import { postContract } from '@myblog/shared';
-import { getAuthenticatedUser } from '../utils/auth.helper';
+import { getAuthenticatedUser } from '../auth/auth.helper';
 import { PostService } from './post.service';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 import { serializeError } from '../common/utils/serializeError';

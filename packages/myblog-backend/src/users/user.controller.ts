@@ -1,6 +1,6 @@
 import { initServer } from '@ts-rest/express';
 import { userContract } from '@myblog/shared';
-import { getAuthenticatedUser } from '../utils/auth.helper';
+import { getAuthenticatedUser } from '../auth/auth.helper';
 import { UserService } from './user.service';
 import {
   UserNotFoundException,

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { db } from '../utils/database';
+import { db } from '../database/database';
 import type { UserRow, UserTable } from '../database/types';
 import type { Updateable } from 'kysely';
 import type { UserStatusType, User } from '@myblog/shared';

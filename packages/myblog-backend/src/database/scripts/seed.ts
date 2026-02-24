@@ -26,7 +26,7 @@ const force =
   process.env.SEED_FORCE === 'true' || process.env.SEED_FORCE === '1';
 
 async function seed() {
-  const { db } = await import('../../utils/database.js');
+  const { db } = await import('../database.js');
   const { UserService } = await import('../../users/user.service.js');
   const { UserWithThatEmailAlreadyExistsException } =
     await import('../../users/user.errors.js');
