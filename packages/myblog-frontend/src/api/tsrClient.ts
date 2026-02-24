@@ -77,4 +77,20 @@ export const api = {
     }
     return await response.blob();
   },
+
+  async deleteAccount(userId: string): Promise<void> {
+    const token = localStorage.getItem('auth-token');
+    const response = await fetch(`${baseUrl}/users/${userId}`, {
+      method: 'DELETE',
+      headers: token ? { authorization: `Bearer ${token}` } : {},
+    });
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: 'Failed to delete account' }));
+      throw new Error(
+        typeof errorData.error === 'string' ? errorData.error : 'Failed to delete account'
+      );
+    }
+  },
 };

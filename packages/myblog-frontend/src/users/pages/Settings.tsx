@@ -17,6 +17,7 @@ export function Settings() {
   const turnOffTwoFactorMutation = tsrClient.auth.turnOffTwoFactor.useMutation({
     onSuccess: () => refreshUser(),
   });
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   if (!user) {
     return null;
@@ -293,18 +294,28 @@ export function Settings() {
         </p>
         <button
           className="delete-btn"
-          onClick={() => {
+          disabled={deletingAccount}
+          onClick={async () => {
             if (
-              window.confirm(
+              !window.confirm(
                 'Are you sure you want to delete your account? This action cannot be undone.'
               )
             ) {
-              // TODO: Wire up account deletion API when backend supports it
+              return;
+            }
+            setDeletingAccount(true);
+            try {
+              await api.deleteAccount(user.id);
+              localStorage.removeItem('auth-token');
+              window.location.replace('/');
+            } catch {
+              alert('Failed to delete account. Please try again.');
+              setDeletingAccount(false);
             }
           }}
           style={{ padding: '0.75rem 1.5rem' }}
         >
-          Delete Account
+          {deletingAccount ? 'Deleting...' : 'Delete Account'}
         </button>
       </div>
     </div>
