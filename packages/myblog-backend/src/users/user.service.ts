@@ -208,4 +208,23 @@ export class UserService {
     const { userId, code } = params;
     await this.userRepository.updateTwoFactorCode({ id: userId, code });
   }
+
+  async delete(userId: string): Promise<void> {
+    await this.getUserById(userId);
+    const user = await this.userRepository.findById(userId);
+    if (user?.profilePicture) {
+      try {
+        await minioClient.removeObject(
+          PROFILE_PICTURES_BUCKET,
+          user.profilePicture
+        );
+      } catch {
+        this.logger.warn('Failed to delete profile picture from MinIO', {
+          userId,
+        });
+      }
+    }
+    await this.userRepository.deleteById(userId);
+    this.logger.info('User deleted', { userId });
+  }
 }

@@ -101,6 +101,19 @@ export const userContract = c.router({
     },
     summary: 'Get a user by username',
   },
+  delete: {
+    method: 'DELETE',
+    path: '/users/:id',
+    pathParams: z.object({ id: z.string() }),
+    responses: {
+      200: z.object({}),
+      401: z.object({ error: z.string() }),
+      403: z.object({ error: z.string() }),
+      404: z.object({ error: z.string() }),
+      500: z.object({ error: z.string() }),
+    },
+    summary: 'Delete the current user account (only own account)',
+  },
 });
 
 export const postContract = c.router({

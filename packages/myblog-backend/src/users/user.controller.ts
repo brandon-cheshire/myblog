@@ -7,6 +7,10 @@ import {
   UserWithThatEmailAlreadyExistsException,
   UsernameAlreadyTakenException,
 } from './user.errors';
+import {
+  AuthenticationTokenMissingException,
+  WrongAuthenticationTokenException,
+} from '../auth/auth.errors';
 import { PostService } from '../posts/post.service';
 import { Request, Response } from 'express';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
@@ -206,6 +210,48 @@ export const userRouter = s.router(userContract, {
       logger.error(
         { message: 'Error uploading profile picture', error },
         { userId: (await getAuthenticatedUser(ctx)).id }
+      );
+      return {
+        status: 500 as const,
+        body: { error: serializeError(error) },
+      };
+    }
+  },
+
+  delete: async (ctx) => {
+    try {
+      const user = await getAuthenticatedUser(ctx);
+      if (user.id !== ctx.params.id) {
+        return {
+          status: 403 as const,
+          body: { error: 'You can only delete your own account' },
+        };
+      }
+      await userService.delete(ctx.params.id);
+      return { status: 200 as const, body: {} };
+    } catch (error) {
+      if (error instanceof AuthenticationTokenMissingException) {
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof WrongAuthenticationTokenException) {
+        return {
+          status: 401 as const,
+          body: { error: error.message },
+        };
+      }
+      if (error instanceof UserNotFoundException) {
+        logger.warn('User not found for deletion', { id: ctx.params.id });
+        return {
+          status: 404 as const,
+          body: { error: error.message },
+        };
+      }
+      logger.error(
+        { message: 'Error deleting user', error },
+        { id: ctx.params.id }
       );
       return {
         status: 500 as const,
