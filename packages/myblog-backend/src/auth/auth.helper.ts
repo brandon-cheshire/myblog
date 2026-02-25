@@ -1,15 +1,11 @@
 import type { Request } from 'express';
 import { AuthService } from './auth.service';
 import { AuthenticationTokenMissingException } from './auth.errors';
-import type { User } from '@myblog/shared';
+import type { AuthPrincipal } from './auth.types';
 
 const authService = new AuthService();
 
-function getTokenFromRequest(req: Request): string | null {
-  const cookies = req.cookies;
-  if (cookies?.Authorization) {
-    return cookies.Authorization;
-  }
+export function getTokenFromRequest(req: Request): string | null {
   const authHeader = req.headers.authorization;
   if (authHeader?.startsWith('Bearer ')) {
     return authHeader.slice(7);
@@ -17,16 +13,17 @@ function getTokenFromRequest(req: Request): string | null {
   return null;
 }
 
-export async function getAuthenticatedUser(
+export async function getAuthPrincipal(
   ctx: { req: Request },
   omitSecondFactor = false
-): Promise<User> {
+): Promise<AuthPrincipal> {
   const token = getTokenFromRequest(ctx.req);
 
   if (!token) {
     throw new AuthenticationTokenMissingException();
   }
 
-  return authService.getUserFromToken({ token, omitSecondFactor });
+  const user = await authService.getUserFromToken({ token, omitSecondFactor });
+  return { userId: user.id };
 }
 

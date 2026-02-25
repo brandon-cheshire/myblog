@@ -1,7 +1,7 @@
 import { initServer } from '@ts-rest/express';
 import { authContract } from '@myblog/shared';
 import { AuthService } from './auth.service';
-import { getAuthenticatedUser } from './auth.helper';
+import { getAuthPrincipal, getTokenFromRequest } from './auth.helper';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 import { serializeError } from '../common/utils/serializeError';
 import {
@@ -19,15 +19,17 @@ const authService = new AuthService();
 export const authRouter = s.router(authContract, {
   register: async (ctx) => {
     try {
-      const userResponse = await authService.register({
+      const tokenResponse = await authService.register({
         userData: {
           name: ctx.body.name,
           email: ctx.body.email,
           password: ctx.body.password,
         },
-        res: ctx.res,
       });
-      return { status: 200 as const, body: userResponse };
+      return {
+        status: 200 as const,
+        body: { accessToken: tokenResponse.accessToken },
+      };
     } catch (error) {
       if (error instanceof WrongCredentialsException) {
         logger.warn('Registration failed: wrong credentials', {
@@ -52,12 +54,11 @@ export const authRouter = s.router(authContract, {
 
   login: async (ctx) => {
     try {
-      const userResponse = await authService.login({
+      const loginResponse = await authService.login({
         email: ctx.body.email,
         password: ctx.body.password,
-        res: ctx.res,
       });
-      return { status: 200 as const, body: userResponse };
+      return { status: 200 as const, body: loginResponse };
     } catch (error) {
       if (error instanceof WrongCredentialsException) {
         logger.warn('Login failed: wrong credentials', {
@@ -119,9 +120,9 @@ export const authRouter = s.router(authContract, {
 
   changePassword: async (ctx) => {
     try {
-      const user = await getAuthenticatedUser(ctx);
+      const { userId } = await getAuthPrincipal(ctx);
       await authService.changePassword({
-        userId: user.id,
+        userId,
         currentPassword: ctx.body.currentPassword,
         newPassword: ctx.body.newPassword,
       });
@@ -225,18 +226,8 @@ export const authRouter = s.router(authContract, {
   },
 
   logout: async (ctx) => {
-    try {
-      const user = await getAuthenticatedUser(ctx);
-      logger.info('User logged out', { userId: user.id });
-    } catch {
-      // No valid session; still clear cookie below
-    }
-    ctx.res.clearCookie('Authorization', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-    });
+    // Stateless JWT: logout is handled client-side by discarding the token.
+    logger.info('Logout requested');
     return {
       status: 200 as const,
       body: { message: 'Logged out successfully' },
@@ -245,7 +236,11 @@ export const authRouter = s.router(authContract, {
 
   getCurrentUser: async (ctx) => {
     try {
-      const user = await getAuthenticatedUser(ctx);
+      const token = getTokenFromRequest(ctx.req);
+      if (!token) {
+        throw new AuthenticationTokenMissingException();
+      }
+      const user = await authService.getUserFromToken({ token });
       return { status: 200 as const, body: user };
     } catch (error) {
       if (error instanceof AuthenticationTokenMissingException) {
@@ -286,15 +281,19 @@ export const authRouter = s.router(authContract, {
   },
 
   generateTwoFactor: async (ctx) => {
-    const user = await getAuthenticatedUser(ctx);
+    const { userId } = await getAuthPrincipal(ctx);
     ctx.res.status(200);
-    await authService.generateTwoFactor(user.id, ctx.res);
+    await authService.generateTwoFactor(userId, ctx.res);
     throw new Error('STREAMING_RESPONSE_SENT');
   },
 
   turnOnTwoFactor: async (ctx) => {
     try {
-      const user = await getAuthenticatedUser(ctx);
+      const token = getTokenFromRequest(ctx.req);
+      if (!token) {
+        throw new AuthenticationTokenMissingException();
+      }
+      const user = await authService.getUserFromToken({ token });
       await authService.enableTwoFactor({
         userId: user.id,
         code: ctx.body.twoFactorAuthenticationCode,
@@ -327,8 +326,8 @@ export const authRouter = s.router(authContract, {
 
   turnOffTwoFactor: async (ctx) => {
     try {
-      const user = await getAuthenticatedUser(ctx);
-      await authService.disableTwoFactor(user.id);
+      const { userId } = await getAuthPrincipal(ctx);
+      await authService.disableTwoFactor(userId);
       return { status: 200 as const, body: {} };
     } catch (error) {
       if (error instanceof AuthenticationTokenMissingException) {
@@ -356,13 +355,22 @@ export const authRouter = s.router(authContract, {
 
   authenticateTwoFactor: async (ctx) => {
     try {
-      const user = await getAuthenticatedUser(ctx, true);
-      const userResponse = await authService.authenticateTwoFactor({
+      const token = getTokenFromRequest(ctx.req);
+      if (!token) {
+        throw new AuthenticationTokenMissingException();
+      }
+      const user = await authService.getUserFromToken({
+        token,
+        omitSecondFactor: true,
+      });
+      const tokenResponse = await authService.authenticateTwoFactor({
         user,
         code: ctx.body.twoFactorAuthenticationCode,
-        res: ctx.res,
       });
-      return { status: 200 as const, body: userResponse };
+      return {
+        status: 200 as const,
+        body: { accessToken: tokenResponse.accessToken },
+      };
     } catch (error) {
       if (error instanceof AuthenticationTokenMissingException) {
         logger.warn('2FA authentication failed: authentication token missing');

@@ -1,6 +1,6 @@
 import { initServer } from '@ts-rest/express';
 import { postContract } from '@myblog/shared';
-import { getAuthenticatedUser } from '../auth/auth.helper';
+import { getAuthPrincipal } from '../auth/auth.helper';
 import { PostService } from './post.service';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 import { serializeError } from '../common/utils/serializeError';
@@ -50,11 +50,11 @@ export const postRouter = s.router(postContract, {
 
   createPost: async (ctx) => {
     try {
-      const user = await getAuthenticatedUser(ctx);
+      const { userId } = await getAuthPrincipal(ctx);
       const post = await postService.createPost({
         title: ctx.body.title,
         content: ctx.body.content,
-        authorId: user.id,
+        authorId: userId,
       });
       return { status: 201 as const, body: post };
     } catch (error) {
@@ -79,10 +79,10 @@ export const postRouter = s.router(postContract, {
 
   updatePost: async (ctx) => {
     try {
-      const user = await getAuthenticatedUser(ctx);
+      const { userId } = await getAuthPrincipal(ctx);
       const post = await postService.updatePost({
         postId: ctx.params.id,
-        authorId: user.id,
+        authorId: userId,
         updates: {
           title: ctx.body.title,
           content: ctx.body.content,
@@ -119,10 +119,10 @@ export const postRouter = s.router(postContract, {
 
   deletePost: async (ctx) => {
     try {
-      const user = await getAuthenticatedUser(ctx);
+      const { userId } = await getAuthPrincipal(ctx);
       await postService.deletePost({
         postId: ctx.params.id,
-        authorId: user.id,
+        authorId: userId,
       });
       return { status: 200 as const, body: {} };
     } catch (error) {

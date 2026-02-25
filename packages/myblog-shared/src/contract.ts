@@ -195,7 +195,7 @@ export const authContract = c.router({
     path: '/auth/register',
     body: registrationSchema,
     responses: {
-      200: UserSchema.extend({ token: z.string().optional() }),
+      200: z.object({ accessToken: z.string() }),
       400: z.object({
         error: z.string(),
         details: z
@@ -216,7 +216,10 @@ export const authContract = c.router({
     path: '/auth/login',
     body: loginSchema,
     responses: {
-      200: UserSchema.extend({ token: z.string().optional() }),
+      200: z.object({
+        accessToken: z.string().optional(),
+        isTwoFactorAuthenticationEnabled: z.boolean().optional(),
+      }),
       401: z.object({ error: z.string() }),
       500: z.object({ error: z.string() }),
     },
@@ -236,7 +239,7 @@ export const authContract = c.router({
     path: '/auth/2fa/authenticate',
     body: twoFactorAuthenticationCodeSchema,
     responses: {
-      200: UserSchema.extend({ token: z.string().optional() }),
+      200: z.object({ accessToken: z.string() }),
       401: z.object({ error: z.string() }),
       500: z.object({ error: z.string() }),
     },

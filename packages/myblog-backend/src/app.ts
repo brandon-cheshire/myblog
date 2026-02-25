@@ -104,7 +104,7 @@ class App {
 
   private initializeRoutes() {
     // Mount the ts-rest routers using createExpressEndpoints
-    // Auth and file uploads are handled inside the handlers using getAuthenticatedUser helper and multer
+    // Auth and file uploads are handled inside the handlers using Bearer tokens and multer
     // Note: createExpressEndpoints mounts routes at the root, so we need to use a router with /api prefix
     const apiRouter = express.Router();
 

@@ -1,6 +1,6 @@
 import { initServer } from '@ts-rest/express';
 import { userContract } from '@myblog/shared';
-import { getAuthenticatedUser } from '../auth/auth.helper';
+import { getAuthPrincipal } from '../auth/auth.helper';
 import { UserService } from './user.service';
 import {
   UserNotFoundException,
@@ -109,10 +109,10 @@ export const userRouter = s.router(userContract, {
 
   updateUsername: async (ctx) => {
     try {
-      const user = await getAuthenticatedUser(ctx);
+      const { userId } = await getAuthPrincipal(ctx);
       const { username } = ctx.body;
       const updatedUser = await userService.updateUsername({
-        userId: user.id,
+        userId,
         username,
       });
       return { status: 200 as const, body: updatedUser };
@@ -149,7 +149,7 @@ export const userRouter = s.router(userContract, {
 
   getUserPosts: async (ctx) => {
     try {
-      await getAuthenticatedUser(ctx);
+      await getAuthPrincipal(ctx);
       const userId = ctx.params.id;
       const posts = await postService.getPostsByAuthorId(userId);
       return { status: 200 as const, body: posts };
@@ -167,7 +167,7 @@ export const userRouter = s.router(userContract, {
 
   uploadProfilePicture: async (ctx) => {
     try {
-      const user = await getAuthenticatedUser(ctx);
+      const { userId } = await getAuthPrincipal(ctx);
 
       let file: Express.Multer.File;
       try {
@@ -202,7 +202,7 @@ export const userRouter = s.router(userContract, {
       }
 
       const result = await userService.uploadProfilePicture({
-        userId: user.id,
+        userId,
         file,
       });
       return { status: 200 as const, body: result };
@@ -219,8 +219,8 @@ export const userRouter = s.router(userContract, {
 
   delete: async (ctx) => {
     try {
-      const user = await getAuthenticatedUser(ctx);
-      if (user.id !== ctx.params.id) {
+      const { userId } = await getAuthPrincipal(ctx);
+      if (userId !== ctx.params.id) {
         return {
           status: 403 as const,
           body: { error: 'You can only delete your own account' },

@@ -38,18 +38,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = tsrClient.auth.login.useMutation({
     onSuccess: (res) => {
-      const body = res.body as { token?: string };
-      if (body.token) {
-        localStorage.setItem('auth-token', body.token);
+      const body = res.body as { accessToken?: string };
+      if (body.accessToken) {
+        localStorage.setItem('auth-token', body.accessToken);
       }
     },
   });
 
   const registerMutation = tsrClient.auth.register.useMutation({
     onSuccess: (res) => {
-      const body = res.body as { token?: string };
-      if (body.token) {
-        localStorage.setItem('auth-token', body.token);
+      const body = res.body as { accessToken?: string };
+      if (body.accessToken) {
+        localStorage.setItem('auth-token', body.accessToken);
       }
     },
   });
@@ -57,9 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const authenticateTwoFactorMutation =
     tsrClient.auth.authenticateTwoFactor.useMutation({
       onSuccess: (res) => {
-        const body = res.body as { token?: string };
-        if (body.token) {
-          localStorage.setItem('auth-token', body.token);
+        const body = res.body as { accessToken?: string };
+        if (body.accessToken) {
+          localStorage.setItem('auth-token', body.accessToken);
         }
       },
     });
@@ -92,15 +92,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       const body = result.body as {
         isTwoFactorAuthenticationEnabled?: boolean;
-        token?: string;
+        accessToken?: string;
       };
       if (body.isTwoFactorAuthenticationEnabled) {
         setRequiresTwoFactorState(true);
         setTempCredentialsState({ email, password });
         return;
       }
-      if (body.token) {
-        localStorage.setItem('auth-token', body.token);
+      if (body.accessToken) {
+        localStorage.setItem('auth-token', body.accessToken);
       }
       await queryClient.invalidateQueries({ queryKey: AUTH_ME_QUERY_KEY });
       await queryClient.refetchQueries({ queryKey: AUTH_ME_QUERY_KEY });
@@ -122,9 +122,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     setRequiresTwoFactorState(false);
     setTempCredentialsState(null);
-    const body = result.body as { token?: string };
-    if (body?.token) {
-      localStorage.setItem('auth-token', body.token);
+    const body = result.body as { accessToken?: string };
+    if (body?.accessToken) {
+      localStorage.setItem('auth-token', body.accessToken);
     }
     await queryClient.invalidateQueries({ queryKey: AUTH_ME_QUERY_KEY });
     await queryClient.refetchQueries({ queryKey: AUTH_ME_QUERY_KEY });

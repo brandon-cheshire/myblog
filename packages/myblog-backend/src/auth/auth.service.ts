@@ -19,14 +19,15 @@ import {
 import type { User } from '@myblog/shared';
 import type { UserWithPasswordHash } from '../users/user.types';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
+import type { JwtPayload } from '@myblog/shared/auth/auth.types';
+import { getJwtConfig } from './auth.config';
 
 export interface TokenData {
   token: string;
   expiresIn: number;
 }
 
-export interface DataStoredInToken {
-  _id: string;
+interface MyblogJwtPayload extends JwtPayload {
   isSecondFactorAuthenticated: boolean;
 }
 
@@ -39,21 +40,22 @@ export class AuthService {
     token: string;
     omitSecondFactor?: boolean;
   }): Promise<User> {
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      throw new Error('JWT_SECRET is not defined');
-    }
+    const { secret } = getJwtConfig();
 
     try {
       const verificationResponse = jwt.verify(
         params.token,
         secret
-      ) as unknown as DataStoredInToken;
-      const { _id: id, isSecondFactorAuthenticated } = verificationResponse;
-      const user = await this.userRepository.findById(id);
+      ) as unknown as MyblogJwtPayload;
+      const { sub: userId, isSecondFactorAuthenticated } = verificationResponse;
+      const user = await this.userRepository.findById(userId);
 
       if (!user) {
         throw new WrongAuthenticationTokenException();
+      }
+
+      if (user.status === 'password_reset_required') {
+        throw new PasswordResetRequiredException();
       }
 
       if (
@@ -66,7 +68,10 @@ export class AuthService {
 
       return user;
     } catch (error) {
-      if (error instanceof WrongAuthenticationTokenException) {
+      if (
+        error instanceof WrongAuthenticationTokenException ||
+        error instanceof PasswordResetRequiredException
+      ) {
         throw error;
       }
 
@@ -97,41 +102,19 @@ export class AuthService {
   }
 
   private createToken(
-    user: { id: string },
+    user: { id: string; email: string },
     isSecondFactorAuthenticated = false
   ): TokenData {
-    const expiresIn = 60 * 60; // an hour
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      throw new Error('JWT_SECRET is not defined');
-    }
-    const dataStoredInToken: DataStoredInToken = {
+    const { secret, expiresInSeconds } = getJwtConfig();
+    const payload: MyblogJwtPayload = {
+      email: user.email,
+      sub: user.id,
       isSecondFactorAuthenticated,
-      _id: user.id,
     };
     return {
-      expiresIn,
-      token: jwt.sign(dataStoredInToken, secret, { expiresIn }),
+      expiresIn: expiresInSeconds,
+      token: jwt.sign(payload, secret, { expiresIn: expiresInSeconds }),
     };
-  }
-
-  private setCookie(response: Response, tokenData: TokenData) {
-    const cookieOptions: CookieOptions = {
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: tokenData.expiresIn * 1000, // Convert to milliseconds
-      path: '/',
-    };
-
-    // Only set secure in production (HTTPS)
-    if (process.env.NODE_ENV === 'production') {
-      cookieOptions.secure = true;
-    }
-
-    // Don't set domain for localhost - let browser handle it
-    // Setting domain can cause issues with localhost
-
-    response.cookie('Authorization', tokenData.token, cookieOptions);
   }
 
   private getTwoFactorAuthenticationCode() {
@@ -176,18 +159,22 @@ export class AuthService {
       email: string;
       password: string;
     };
-    res: Response;
-  }) {
+  }): Promise<{ accessToken: string }> {
     const user = await this.userService.create(params.userData);
 
     const tokenData = this.createToken(user);
-    this.setCookie(params.res, tokenData);
     this.logger.info('User registered', { userId: user.id });
 
-    return { ...user, token: tokenData.token };
+    return { accessToken: tokenData.token };
   }
 
-  async login(params: { email: string; password: string; res: Response }) {
+  async login(params: {
+    email: string;
+    password: string;
+  }): Promise<
+    | { accessToken: string; isTwoFactorAuthenticationEnabled?: false }
+    | { isTwoFactorAuthenticationEnabled: true }
+  > {
     const user = await this.userRepository.findByEmailWithPasswordHash(
       params.email
     );
@@ -209,18 +196,19 @@ export class AuthService {
 
     const authenticatedUser = this.authenticateUser(user, params.password);
     const tokenData = this.createToken(authenticatedUser);
-    this.setCookie(params.res, tokenData);
 
     this.logger.info('User logged in', { userId: authenticatedUser.id });
 
     if (authenticatedUser.isTwoFactorAuthenticationEnabled) {
       return {
-        ...authenticatedUser,
         isTwoFactorAuthenticationEnabled: true,
       };
     }
 
-    return { ...authenticatedUser, token: tokenData.token };
+    return {
+      accessToken: tokenData.token,
+      isTwoFactorAuthenticationEnabled: false,
+    };
   }
 
   async changePassword(params: {
@@ -337,8 +325,7 @@ export class AuthService {
   async authenticateTwoFactor(params: {
     user: User;
     code: string;
-    res: Response;
-  }) {
+  }): Promise<{ accessToken: string }> {
     const isCodeValid = this.verifyTwoFactorAuthenticationCode(
       params.code,
       params.user
@@ -348,10 +335,8 @@ export class AuthService {
     }
 
     const tokenData = this.createToken(params.user, true);
-    this.setCookie(params.res, tokenData);
-
     this.logger.info('2FA authenticated', { userId: params.user.id });
 
-    return { ...params.user, token: tokenData.token };
+    return { accessToken: tokenData.token };
   }
 }
