@@ -1,6 +1,6 @@
 # myblog
 
-Monorepo: React frontend (Vite), Express backend, shared contracts/schemas.
+A full-stack blog platform built as a monorepo: React frontend (Vite), Express backend, and shared TypeScript contracts/schemas. Includes authentication, file uploads (MinIO), and a Postgres-backed API with migrations and seeding.
 
 ## Prerequisites
 
@@ -54,13 +54,16 @@ npm run dev
 
 ## Scripts
 
-| Command           | Description                              |
-| ----------------- | ---------------------------------------- |
-| `npm run dev`     | Start backend + frontend (concurrently)  |
-| `npm run migrate` | Run DB migrations (backend)              |
-| `npm run seed`    | Seed database (backend)                  |
-| `npm run lint`    | Lint entire repo                         |
-| `npm run knip`    | Find unused files, dependencies, exports |
+All commands below are run from the repo root and delegate to the appropriate workspace.
+
+| Command           | Description                                      |
+| ----------------- | ------------------------------------------------ |
+| `npm run dev`     | Start backend + frontend (concurrently)          |
+| `npm run migrate` | Run DB migrations (backend)                      |
+| `npm run seed`    | Seed database (backend)                          |
+| `npm run lint`    | Lint entire repo                                 |
+| `npm run knip`    | Find unused files, dependencies, and exports     |
+| `npm test`        | Currently not implemented; exits with an error   |
 
 ## Project layout
 
@@ -78,3 +81,7 @@ packages/
 - Password: `admin` (from `PGADMIN_DEFAULT_PASSWORD`)
 
 Add a server with host `postgres`, port `5432`, user/password/database from `packages/myblog-backend/.env` (e.g. `admin` / `admin` / `tutorial`).
+
+## License
+
+This project is **UNLICENSED**. See `package.json` for details.
