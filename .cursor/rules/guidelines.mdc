@@ -297,7 +297,7 @@ Include component type in the filename:
 
 - **Repositories**: Data access only; encapsulate Kysely queries (e.g. `PostRepository`, `UserRepository`)
 - **Services**: Business logic; single responsibility; use repositories, not raw DB in services
-- **Controllers**: ts-rest routers; call services; use `handleControllerError` and return contract-shaped responses
+- **Controllers**: ts-rest routers; call services; catch errors and return contract-shaped `{ status, body }` responses
 
 ### Service Design
 
@@ -316,16 +316,21 @@ Include component type in the filename:
 ### Error Handling
 
 - **Throw custom errors** from services (e.g. `PostNotFoundException`, `NotAuthorizedException` extending `HttpException`)
-- **Catch in controllers** and map to responses via `handleControllerError`
+- **Catch in controllers**: use try/catch, check `error instanceof CustomException`, return appropriate `{ status, body }`; use `serializeError(error)` for unexpected 500 responses
 - Don’t throw raw `Error` in application code; use the project’s exception classes
 
 ```typescript
 // In controller
 try {
-  const result = await authService.login(ctx.body.email, ctx.body.password, ctx.res);
+  const result = await authService.login({ email: ctx.body.email, password: ctx.body.password });
   return { status: 200 as const, body: result };
 } catch (error) {
-  return handleControllerError(error, { logger, context: 'login' }) as never;
+  if (error instanceof WrongCredentialsException) {
+    logger.warn('Login failed: wrong credentials', { email: ctx.body.email });
+    return { status: 401 as const, body: { error: error.message } };
+  }
+  logger.error({ message: 'Error during login', error }, { email: ctx.body.email });
+  return { status: 500 as const, body: { error: serializeError(error) } };
 }
 ```
 
@@ -396,7 +401,7 @@ enum UserStatus {
 
 ### Database Migrations
 
-- Use the project’s migration workflow (e.g. `yarn migrate`, migration scripts in `src/database/`)
+- Use the project’s migration workflow (e.g. `yarn migrate` or `npm run migrate` from repo root; migration SQL files in `src/database/migrations/`, runner in `src/database/migrate.ts`)
 - Never create or alter database resources manually; always use migrations
 
 #### Migration Standards
