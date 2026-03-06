@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
+import { Injectable } from '@nestjs/common';
 import type { CookieOptions, Response } from 'express';
 import { UserRepository } from '../users/user.repository';
 import { UserService } from '../users/user.service';
@@ -31,10 +32,14 @@ interface MyblogJwtPayload extends JwtPayload {
   isSecondFactorAuthenticated: boolean;
 }
 
+@Injectable()
 export class AuthService {
   private readonly logger = new AppLogger(AuthService.name);
-  private userRepository = new UserRepository();
-  private userService = new UserService();
+
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly userService: UserService
+  ) {}
 
   async getUserFromToken(params: {
     token: string;

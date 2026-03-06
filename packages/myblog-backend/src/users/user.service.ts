@@ -1,4 +1,5 @@
 import * as path from 'path';
+import { Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { hashData } from '../common/utils/bcrypt';
 import { UniqueConstraintViolationException } from '../common/database.errors';
@@ -15,9 +16,11 @@ import {
   ensureBucketExists,
 } from '../utils/minio';
 
+@Injectable()
 export class UserService {
   private readonly logger = new AppLogger(UserService.name);
-  private userRepository = new UserRepository();
+
+  constructor(private readonly userRepository: UserRepository) {}
 
   private generateBaseUsername(name: string): string {
     let base = name

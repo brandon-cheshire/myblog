@@ -1,12 +1,15 @@
 import { randomUUID } from 'node:crypto';
+import { Injectable } from '@nestjs/common';
 import type { PostResponse } from '@myblog/shared';
 import { PostRepository, type PostWithAuthor } from './post.repository';
 import { PostNotFoundException, NotAuthorizedException } from './post.errors';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 
+@Injectable()
 export class PostService {
   private readonly logger = new AppLogger(PostService.name);
-  private postRepository = new PostRepository();
+
+  constructor(private readonly postRepository: PostRepository) {}
 
   private transformPost(post: PostWithAuthor): PostResponse {
     return {

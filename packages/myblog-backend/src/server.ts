@@ -1,16 +1,7 @@
 import 'dotenv/config';
-import { validateEnv } from './utils/validateEnv';
-import { initLogging } from './common/utils/app-logger/init-logging';
+import { App } from './app.js';
 
-validateEnv();
-initLogging({ isLocal: process.env.NODE_ENV !== 'production' });
-
-const port = parseInt(process.env.PORT || '5000');
-
-async function main() {
-  const { App } = await import('./app');
-  const app = new App(port);
-  app.listen();
-}
-
-main();
+App.create().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

@@ -1,12 +1,24 @@
+import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { db } from '../database/database';
+import type { Kysely } from 'kysely';
 import type { UserRow, UserTable } from '../database/types';
+import type { Database } from '../database/types';
 import type { Updateable } from 'kysely';
 import type { UserStatusType, User } from '@myblog/shared';
 import { UniqueConstraintViolationException } from '../common/database.errors';
 import type { UserWithPasswordHash } from './user.types';
+import {
+  TRANSACTION_PROVIDER,
+  type TransactionProvider,
+} from '../transaction/transaction.provider.js';
 
+@Injectable()
 export class UserRepository {
+  constructor(
+    @Inject(TRANSACTION_PROVIDER)
+    private readonly tx: TransactionProvider
+  ) {}
+
   private toUser(user: UserRow): User {
     return {
       id: user.id,
@@ -34,57 +46,62 @@ export class UserRepository {
   }
 
   async findByEmail(email: string): Promise<User | undefined> {
-    const result = await db
-      .selectFrom('User')
-      .where('email', '=', email)
-      .selectAll()
-      .executeTakeFirst();
-
-    return result ? this.toUser(result) : undefined;
+    return this.tx.withoutTransaction(async (db) => {
+      const result = await db
+        .selectFrom('User')
+        .where('email', '=', email)
+        .selectAll()
+        .executeTakeFirst();
+      return result ? this.toUser(result) : undefined;
+    });
   }
 
   async findByEmailWithPasswordHash(
     email: string
   ): Promise<UserWithPasswordHash | undefined> {
-    const result = await db
-      .selectFrom('User')
-      .where('email', '=', email)
-      .selectAll()
-      .executeTakeFirst();
-
-    return result ? this.toUserWithPasswordHash(result) : undefined;
+    return this.tx.withoutTransaction(async (db) => {
+      const result = await db
+        .selectFrom('User')
+        .where('email', '=', email)
+        .selectAll()
+        .executeTakeFirst();
+      return result ? this.toUserWithPasswordHash(result) : undefined;
+    });
   }
 
   async findById(id: string): Promise<User | undefined> {
-    const result = await db
-      .selectFrom('User')
-      .where('id', '=', id)
-      .selectAll()
-      .executeTakeFirst();
-
-    return result ? this.toUser(result) : undefined;
+    return this.tx.withoutTransaction(async (db) => {
+      const result = await db
+        .selectFrom('User')
+        .where('id', '=', id)
+        .selectAll()
+        .executeTakeFirst();
+      return result ? this.toUser(result) : undefined;
+    });
   }
 
   async findByIdWithPasswordHash(
     id: string
   ): Promise<UserWithPasswordHash | undefined> {
-    const result = await db
-      .selectFrom('User')
-      .where('id', '=', id)
-      .selectAll()
-      .executeTakeFirst();
-
-    return result ? this.toUserWithPasswordHash(result) : undefined;
+    return this.tx.withoutTransaction(async (db) => {
+      const result = await db
+        .selectFrom('User')
+        .where('id', '=', id)
+        .selectAll()
+        .executeTakeFirst();
+      return result ? this.toUserWithPasswordHash(result) : undefined;
+    });
   }
 
   async findByUsername(username: string): Promise<User | undefined> {
-    const result = await db
-      .selectFrom('User')
-      .where('username', '=', username)
-      .selectAll()
-      .executeTakeFirst();
-
-    return result ? this.toUser(result) : undefined;
+    return this.tx.withoutTransaction(async (db) => {
+      const result = await db
+        .selectFrom('User')
+        .where('username', '=', username)
+        .selectAll()
+        .executeTakeFirst();
+      return result ? this.toUser(result) : undefined;
+    });
   }
 
   async create(userData: {
@@ -94,38 +111,40 @@ export class UserRepository {
     status?: UserStatusType;
     username?: string | null;
   }): Promise<User> {
-    const userId = randomUUID();
-    const now = new Date().toISOString();
-    const result = await db
-      .insertInto('User')
-      .values({
-        id: userId,
-        name: userData.name,
-        email: userData.email,
-        password_hash: userData.password_hash,
-        username: userData.username || null,
-        status: (userData.status || 'active') as UserStatusType,
-        createdAt: now,
-        updatedAt: null,
-      })
-      .returningAll()
-      .executeTakeFirstOrThrow();
-
-    return this.toUser(result);
+    return this.tx.withoutTransaction(async (db) => {
+      const userId = randomUUID();
+      const now = new Date().toISOString();
+      const result = await db
+        .insertInto('User')
+        .values({
+          id: userId,
+          name: userData.name,
+          email: userData.email,
+          password_hash: userData.password_hash,
+          username: userData.username || null,
+          status: (userData.status || 'active') as UserStatusType,
+          createdAt: now,
+          updatedAt: null,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      return this.toUser(result);
+    });
   }
 
   async update(params: {
     id: string;
     updates: Updateable<UserTable>;
   }): Promise<User> {
-    const result = await db
-      .updateTable('User')
-      .set(params.updates)
-      .where('id', '=', params.id)
-      .returningAll()
-      .executeTakeFirstOrThrow();
-
-    return this.toUser(result);
+    return this.tx.withoutTransaction(async (db) => {
+      const result = await db
+        .updateTable('User')
+        .set(params.updates)
+        .where('id', '=', params.id)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      return this.toUser(result);
+    });
   }
 
   async updateTwoFactorCode(params: { id: string; code: string }): Promise<void> {
@@ -133,19 +152,23 @@ export class UserRepository {
   }
 
   async enableTwoFactor(id: string): Promise<void> {
-    await db
-      .updateTable('User')
-      .set({ isTwoFactorAuthenticationEnabled: true })
-      .where('id', '=', id)
-      .execute();
+    return this.tx.withoutTransaction(async (db) => {
+      await db
+        .updateTable('User')
+        .set({ isTwoFactorAuthenticationEnabled: true })
+        .where('id', '=', id)
+        .execute();
+    });
   }
 
   async disableTwoFactor(id: string): Promise<void> {
-    await db
-      .updateTable('User')
-      .set({ isTwoFactorAuthenticationEnabled: false })
-      .where('id', '=', id)
-      .execute();
+    return this.tx.withoutTransaction(async (db) => {
+      await db
+        .updateTable('User')
+        .set({ isTwoFactorAuthenticationEnabled: false })
+        .where('id', '=', id)
+        .execute();
+    });
   }
 
   async updateProfilePicture(params: {
@@ -222,23 +245,27 @@ export class UserRepository {
   }
 
   async deleteById(id: string): Promise<void> {
-    await db.deleteFrom('User').where('id', '=', id).execute();
+    return this.tx.withoutTransaction(async (db) => {
+      await db.deleteFrom('User').where('id', '=', id).execute();
+    });
   }
 
   async isUsernameTaken(params: {
     username: string;
     excludeUserId?: string;
   }): Promise<boolean> {
-    let query = db
-      .selectFrom('User')
-      .select('id')
-      .where('username', '=', params.username);
+    return this.tx.withoutTransaction(async (db) => {
+      let query = db
+        .selectFrom('User')
+        .select('id')
+        .where('username', '=', params.username);
 
-    if (params.excludeUserId) {
-      query = query.where('id', '!=', params.excludeUserId);
-    }
+      if (params.excludeUserId) {
+        query = query.where('id', '!=', params.excludeUserId);
+      }
 
-    const user = await query.executeTakeFirst();
-    return !!user;
+      const user = await query.executeTakeFirst();
+      return !!user;
+    });
   }
 }

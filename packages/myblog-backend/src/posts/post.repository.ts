@@ -1,4 +1,10 @@
-import { db } from '../database/database';
+import { Inject, Injectable } from '@nestjs/common';
+import type { Kysely } from 'kysely';
+import type { Database } from '../database/types';
+import {
+  TRANSACTION_PROVIDER,
+  type TransactionProvider,
+} from '../transaction/transaction.provider.js';
 
 export interface PostWithAuthor {
   id: string;
@@ -13,72 +19,81 @@ export interface PostWithAuthor {
   profilePicture: string | null;
 }
 
+@Injectable()
 export class PostRepository {
-  async findAll(): Promise<PostWithAuthor[]> {
-    const posts = await db
-      .selectFrom('posts')
-      .leftJoin('User', 'posts.authorId', 'User.id')
-      .select([
-        'posts.id',
-        'posts.title',
-        'posts.content',
-        'posts.authorId',
-        'posts.createdAt',
-        'posts.updatedAt',
-        'User.name',
-        'User.email',
-        'User.username',
-        'User.profilePicture',
-      ])
-      .orderBy('posts.createdAt', 'desc')
-      .execute();
+  constructor(
+    @Inject(TRANSACTION_PROVIDER)
+    private readonly tx: TransactionProvider
+  ) {}
 
-    return posts as PostWithAuthor[];
+  async findAll(): Promise<PostWithAuthor[]> {
+    return this.tx.withoutTransaction(async (db) => {
+      const posts = await db
+        .selectFrom('posts')
+        .leftJoin('User', 'posts.authorId', 'User.id')
+        .select([
+          'posts.id',
+          'posts.title',
+          'posts.content',
+          'posts.authorId',
+          'posts.createdAt',
+          'posts.updatedAt',
+          'User.name',
+          'User.email',
+          'User.username',
+          'User.profilePicture',
+        ])
+        .orderBy('posts.createdAt', 'desc')
+        .execute();
+      return posts as PostWithAuthor[];
+    });
   }
 
   async findById(id: string): Promise<PostWithAuthor | undefined> {
-    const post = await db
-      .selectFrom('posts')
-      .leftJoin('User', 'posts.authorId', 'User.id')
-      .where('posts.id', '=', id)
-      .select([
-        'posts.id',
-        'posts.title',
-        'posts.content',
-        'posts.authorId',
-        'posts.createdAt',
-        'posts.updatedAt',
-        'User.name',
-        'User.email',
-        'User.username',
-        'User.profilePicture',
-      ])
-      .executeTakeFirst();
-
-    return post as PostWithAuthor | undefined;
+    return this.tx.withoutTransaction(async (db) => {
+      const post = await db
+        .selectFrom('posts')
+        .leftJoin('User', 'posts.authorId', 'User.id')
+        .where('posts.id', '=', id)
+        .select([
+          'posts.id',
+          'posts.title',
+          'posts.content',
+          'posts.authorId',
+          'posts.createdAt',
+          'posts.updatedAt',
+          'User.name',
+          'User.email',
+          'User.username',
+          'User.profilePicture',
+        ])
+        .executeTakeFirst();
+      return post as PostWithAuthor | undefined;
+    });
   }
 
   async findByAuthorId(authorId: string): Promise<PostWithAuthor[]> {
-    const posts = await db
-      .selectFrom('posts')
-      .leftJoin('User', 'posts.authorId', 'User.id')
-      .where('posts.authorId', '=', authorId)
-      .select([
-        'posts.id',
-        'posts.title',
-        'posts.content',
-        'posts.authorId',
-        'posts.createdAt',
-        'posts.updatedAt',
-        'User.name',
-        'User.email',
-        'User.username',
-        'User.profilePicture',
-      ])
-      .orderBy('posts.createdAt', 'desc')
-      .execute();
-
-    return posts as PostWithAuthor[];
+    return this.tx.withoutTransaction(async (db) => {
+      const posts = await db
+        .selectFrom('posts')
+        .leftJoin('User', 'posts.authorId', 'User.id')
+        .where('posts.authorId', '=', authorId)
+        .select([
+          'posts.id',
+          'posts.title',
+          'posts.content',
+          'posts.authorId',
+          'posts.createdAt',
+          'posts.updatedAt',
+          'User.name',
+          'User.email',
+          'User.username',
+          'User.profilePicture',
+        ])
+        .orderBy('posts.createdAt', 'desc')
+        .execute();
+      return posts as PostWithAuthor[];
+    });
   }
 
   async create(postData: {
@@ -89,34 +104,39 @@ export class PostRepository {
     createdAt: string;
     updatedAt: string;
   }) {
-    const post = await db
-      .insertInto('posts')
-      .values({
-        id: postData.id,
-        title: postData.title,
-        content: postData.content,
-        authorId: postData.authorId,
-        createdAt: postData.createdAt,
-        updatedAt: postData.updatedAt,
-      })
-      .returningAll()
-      .executeTakeFirstOrThrow();
-
-    return post;
+    return this.tx.withoutTransaction(async (db) => {
+      const post = await db
+        .insertInto('posts')
+        .values({
+          id: postData.id,
+          title: postData.title,
+          content: postData.content,
+          authorId: postData.authorId,
+          createdAt: postData.createdAt,
+          updatedAt: postData.updatedAt,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      return post;
+    });
   }
 
   async update(params: {
     id: string;
     updates: { title?: string; content?: string; updatedAt: string };
   }) {
-    await db
-      .updateTable('posts')
-      .set(params.updates)
-      .where('id', '=', params.id)
-      .execute();
+    return this.tx.withoutTransaction(async (db) => {
+      await db
+        .updateTable('posts')
+        .set(params.updates)
+        .where('id', '=', params.id)
+        .execute();
+    });
   }
 
   async delete(id: string): Promise<void> {
-    await db.deleteFrom('posts').where('id', '=', id).execute();
+    return this.tx.withoutTransaction(async (db) => {
+      await db.deleteFrom('posts').where('id', '=', id).execute();
+    });
   }
 }

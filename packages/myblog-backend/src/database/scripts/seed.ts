@@ -27,11 +27,17 @@ const force =
 
 async function seed() {
   const { db } = await import('../database.js');
+  const { KyselyTransactionProvider } = await import(
+    '../../transaction/transaction.provider.js'
+  );
+  const { UserRepository } = await import('../../users/user.repository.js');
   const { UserService } = await import('../../users/user.service.js');
   const { UserWithThatEmailAlreadyExistsException } =
     await import('../../users/user.errors.js');
 
-  const userService = new UserService();
+  const transactionProvider = new KyselyTransactionProvider(db);
+  const userRepository = new UserRepository(transactionProvider);
+  const userService = new UserService(userRepository);
 
   if (force) {
     await db.deleteFrom('User').where('email', '=', email).execute();

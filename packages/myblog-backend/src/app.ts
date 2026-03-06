@@ -1,47 +1,43 @@
+import 'reflect-metadata';
 import express from 'express';
-import { errorMiddleware } from './middleware/error.middleware';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import { createExpressEndpoints } from '@ts-rest/express';
-import { authContract, postContract, userContract } from '@myblog/shared';
-import { authRouter } from './auth/auth.controller';
-import { postRouter } from './posts/posts.controller';
-import { userRouter } from './users/user.controller';
-import { initLogging } from './common/utils/app-logger/init-logging';
-import { AppLogger } from './common/utils/app-logger/app-logger';
+import { NestFactory } from '@nestjs/core';
+import {
+  ExpressAdapter,
+  NestExpressApplication,
+} from '@nestjs/platform-express';
+import { initLogging } from './common/utils/app-logger/init-logging.js';
+import { AppLogger } from './common/utils/app-logger/app-logger.js';
+import { errorMiddleware } from './middleware/error.middleware.js';
+import { validateEnv } from './utils/validateEnv.js';
+import { ErrorLoggingFilter } from './core/filters/exception.filter.js';
 
-const isLocal = process.env.NODE_ENV !== 'production';
-const { pinoHttpMiddleware, requestContextMiddleware, requestLogMiddleware } =
-  initLogging({ isLocal });
+const logger = new AppLogger('App');
 
-class App {
-  public app: express.Application;
-  public port: number;
-  private readonly logger = new AppLogger(App.name);
-
-  constructor(port: number) {
-    this.app = express();
-    this.port = port;
-    this.initializeMiddlewares();
-    this.initializeRoutes();
-    this.initializeErrorHandling();
+export class App {
+  constructor(public expressApp: express.Application) {
+    this.expressApp = expressApp;
   }
 
-  public listen() {
-    this.app.listen(this.port, '0.0.0.0', () => {
-      this.logger.info(`App listening on port ${this.port}`);
-    });
-  }
+  static async create(): Promise<App> {
+    validateEnv();
 
-  private initializeMiddlewares() {
-    this.app.use(pinoHttpMiddleware);
-    this.app.use(requestContextMiddleware);
-    this.app.use(requestLogMiddleware);
+    const isLocal = process.env.NODE_ENV !== 'production';
+    const {
+      pinoHttpMiddleware,
+      requestContextMiddleware,
+      requestLogMiddleware,
+    } = initLogging({ isLocal });
 
-    // Direct backend URL from frontend: CORS must allow the request origin.
-    // In development, allow any origin so login/fetch work regardless of port. (Auth is Bearer, no cookies.)
+    const expressApp = express();
+
+    expressApp.use(pinoHttpMiddleware);
+    expressApp.use(requestContextMiddleware);
+    expressApp.use(requestLogMiddleware);
+
     const allowedOrigin = process.env.FRONTEND_URL;
-    this.app.use(
+    expressApp.use(
       cors({
         origin: allowedOrigin
           ? allowedOrigin
@@ -62,65 +58,57 @@ class App {
         optionsSuccessStatus: 200,
       })
     );
-    this.app.use(express.json());
-    this.app.use(cookieParser());
+    expressApp.use(express.json());
+    expressApp.use(cookieParser());
 
-    // Proxy uploads to MinIO instead of serving local files
-    this.app.get('/uploads/profile-pictures/:filename', async (req, res) => {
-      try {
-        const { minioClient, PROFILE_PICTURES_BUCKET } =
-          await import('./utils/minio');
-        const filename = req.params.filename;
-
-        // Get object info first to check if it exists and get content type
-        const stat = await minioClient.statObject(
-          PROFILE_PICTURES_BUCKET,
-          filename
-        );
-
-        // Set content type
-        res.setHeader(
-          'Content-Type',
-          stat.metaData['content-type'] || 'application/octet-stream'
-        );
-        res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
-
-        // Stream the object from MinIO to the response
-        const stream = await minioClient.getObject(
-          PROFILE_PICTURES_BUCKET,
-          filename
-        );
-        stream.pipe(res);
-      } catch (error) {
-        this.logger.error({ message: 'Error serving file from MinIO', error });
-        res.status(404).send('File not found');
+    expressApp.get(
+      '/uploads/profile-pictures/:filename',
+      async (req: express.Request, res: express.Response) => {
+        try {
+          const { minioClient, PROFILE_PICTURES_BUCKET } =
+            await import('./utils/minio.js');
+          const filename = req.params.filename;
+          const stat = await minioClient.statObject(
+            PROFILE_PICTURES_BUCKET,
+            filename
+          );
+          res.setHeader(
+            'Content-Type',
+            stat.metaData['content-type'] || 'application/octet-stream'
+          );
+          res.setHeader('Cache-Control', 'public, max-age=31536000');
+          const stream = await minioClient.getObject(
+            PROFILE_PICTURES_BUCKET,
+            filename
+          );
+          stream.pipe(res);
+        } catch (error) {
+          logger.error({ message: 'Error serving file from MinIO', error });
+          res.status(404).send('File not found');
+        }
       }
-    });
+    );
+
+    const { AppModule } = await import('./app.module.js');
+    const nestApp = await NestFactory.create<NestExpressApplication>(
+      AppModule,
+      new ExpressAdapter(expressApp),
+      { bufferLogs: true }
+    );
+
+    nestApp.setGlobalPrefix('api');
+    nestApp.useGlobalFilters(new ErrorLoggingFilter());
+    nestApp.getHttpAdapter().getInstance().disable('x-powered-by');
+
+    expressApp.use(errorMiddleware);
+
+    await nestApp.init();
+
+    const port = parseInt(process.env.PORT || '5000');
+    await nestApp.listen(port, '0.0.0.0');
+
+    logger.info(`App listening on port ${port}`);
+
+    return new App(expressApp);
   }
-
-  private initializeErrorHandling() {
-    this.app.use(errorMiddleware);
-  }
-
-  private initializeRoutes() {
-    // Mount the ts-rest routers using createExpressEndpoints
-    // Auth and file uploads are handled inside the handlers using Bearer tokens and multer
-    // Note: createExpressEndpoints mounts routes at the root, so we need to use a router with /api prefix
-    const apiRouter = express.Router();
-
-    // Use 'combined' mode to get all validation errors
-    createExpressEndpoints(authContract, authRouter, apiRouter, {
-      requestValidationErrorHandler: 'combined',
-    });
-    createExpressEndpoints(postContract, postRouter, apiRouter, {
-      requestValidationErrorHandler: 'combined',
-    });
-    createExpressEndpoints(userContract, userRouter, apiRouter, {
-      requestValidationErrorHandler: 'combined',
-    });
-    this.app.use('/api', apiRouter);
-  }
-
 }
-
-export { App };
