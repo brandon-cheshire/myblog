@@ -1,6 +1,6 @@
 # myblog
 
-A full-stack blog platform built as a monorepo: React frontend (Vite), Express backend, and shared TypeScript contracts/schemas. Includes authentication, file uploads (MinIO), and a Postgres-backed API with migrations and seeding.
+A full-stack blog platform built as a monorepo: React frontend (Vite), Express backend (NestJS, ts-rest), and shared TypeScript contracts/schemas. Includes authentication (including 2FA), file uploads (MinIO), and a Postgres-backed API with migrations and seeding.
 
 ## Prerequisites
 
@@ -56,20 +56,21 @@ npm run dev
 
 All commands below are run from the repo root and delegate to the appropriate workspace.
 
-| Command           | Description                                      |
-| ----------------- | ------------------------------------------------ |
-| `npm run dev`     | Start backend + frontend (concurrently)          |
-| `npm run migrate` | Run DB migrations (backend)                      |
-| `npm run seed`    | Seed database (backend)                          |
-| `npm run lint`    | Lint entire repo                                 |
-| `npm run knip`    | Find unused files, dependencies, and exports     |
-| `npm test`        | Currently not implemented; exits with an error   |
+| Command            | Description                                      |
+| ------------------ | ------------------------------------------------ |
+| `npm run dev`      | Start backend + frontend (concurrently)          |
+| `npm run migrate`  | Run DB migrations (backend)                      |
+| `npm run seed`     | Seed database (backend)                          |
+| `npm run lint`     | Lint entire repo                                 |
+| `npm run format`   | Format code with Prettier                        |
+| `npm run knip`     | Find unused files, dependencies, and exports     |
+| `npm test`         | Not implemented; exits with an error             |
 
 ## Project layout
 
 ```
 packages/
-  myblog-backend/   # Express API (Kysely, ts-rest, auth, MinIO)
+  myblog-backend/   # NestJS on Express (Kysely, ts-rest, auth, 2FA, MinIO)
   myblog-frontend/  # React + Vite + React Query
   myblog-shared/    # Shared types, Zod schemas, ts-rest contract
 ```
