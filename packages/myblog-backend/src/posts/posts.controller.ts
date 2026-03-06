@@ -9,10 +9,10 @@ import { serializeError } from '../common/utils/serializeError.js';
 import { PostNotFoundException, NotAuthorizedException } from './post.errors.js';
 import { PostService } from './post.service.js';
 
-const logger = new AppLogger('PostsController');
-
 @Controller()
 export class PostsController {
+  private readonly logger = new AppLogger(PostsController.name);
+
   constructor(private readonly postService: PostService) {}
 
   @TsRestHandler(contract.posts.getPosts)
@@ -22,7 +22,7 @@ export class PostsController {
         const posts = await this.postService.getAllPosts();
         return { status: 200 as const, body: posts };
       } catch (error) {
-        logger.error({ message: 'Error fetching posts', error });
+        this.logger.error({ message: 'Error fetching posts', error });
         return {
           status: 500 as const,
           body: { error: serializeError(error) },
@@ -39,10 +39,10 @@ export class PostsController {
         return { status: 200 as const, body: post };
       } catch (error) {
         if (error instanceof PostNotFoundException) {
-          logger.warn('Post not found', { id: params.id });
+          this.logger.warn('Post not found', { id: params.id });
           return { status: 404 as const, body: { error: error.message } };
         }
-        logger.error(
+        this.logger.error(
           { message: 'Error fetching post', error },
           { id: params.id }
         );
@@ -64,10 +64,10 @@ export class PostsController {
         return { status: 201 as const, body: post };
       } catch (error) {
         if (error instanceof NotAuthorizedException) {
-          logger.warn('Not authorized to create post', {});
+          this.logger.warn('Not authorized to create post', {});
           return { status: 401 as const, body: { error: error.message } };
         }
-        logger.error(
+        this.logger.error(
           { message: 'Error creating post', error },
           { title: body.title }
         );
@@ -94,14 +94,14 @@ export class PostsController {
           return { status: 200 as const, body: post };
         } catch (error) {
           if (error instanceof PostNotFoundException) {
-            logger.warn('Post not found for update', { id: params.id });
+            this.logger.warn('Post not found for update', { id: params.id });
             return { status: 404 as const, body: { error: error.message } };
           }
           if (error instanceof NotAuthorizedException) {
-            logger.warn('Not authorized to update post', { id: params.id });
+            this.logger.warn('Not authorized to update post', { id: params.id });
             return { status: 401 as const, body: { error: error.message } };
           }
-          logger.error(
+          this.logger.error(
             { message: 'Error updating post', error },
             { id: params.id }
           );
@@ -128,14 +128,14 @@ export class PostsController {
           return { status: 200 as const, body: {} };
         } catch (error) {
           if (error instanceof PostNotFoundException) {
-            logger.warn('Post not found for deletion', { id: params.id });
+            this.logger.warn('Post not found for deletion', { id: params.id });
             return { status: 404 as const, body: { error: error.message } };
           }
           if (error instanceof NotAuthorizedException) {
-            logger.warn('Not authorized to delete post', { id: params.id });
+            this.logger.warn('Not authorized to delete post', { id: params.id });
             return { status: 401 as const, body: { error: error.message } };
           }
-          logger.error(
+          this.logger.error(
             { message: 'Error deleting post', error },
             { id: params.id }
           );

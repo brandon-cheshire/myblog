@@ -20,10 +20,10 @@ import { processMulterUpload } from '../utils/upload.utils.js';
 import { UserService } from './user.service.js';
 import { PostService } from '../posts/post.service.js';
 
-const logger = new AppLogger('UserController');
-
 @Controller()
 export class UserController {
+  private readonly logger = new AppLogger(UserController.name);
+
   constructor(
     private readonly userService: UserService,
     private readonly postService: PostService
@@ -37,16 +37,16 @@ export class UserController {
         return { status: 201 as const, body: user };
       } catch (error) {
         if (error instanceof UserWithThatEmailAlreadyExistsException) {
-          logger.warn('User creation conflict', { email: body.email });
+          this.logger.warn('User creation conflict', { email: body.email });
           return { status: 409 as const, body: { error: error.message } };
         }
         if (error instanceof UsernameAlreadyTakenException) {
-          logger.warn('Username already taken during create', {
+          this.logger.warn('Username already taken during create', {
             email: body.email,
           });
           return { status: 409 as const, body: { error: error.message } };
         }
-        logger.error(
+        this.logger.error(
           { message: 'Error creating user', error },
           { email: body.email }
         );
@@ -63,10 +63,10 @@ export class UserController {
         return { status: 200 as const, body: user };
       } catch (error) {
         if (error instanceof UserNotFoundException) {
-          logger.warn('User not found', { id: params.id });
+          this.logger.warn('User not found', { id: params.id });
           return { status: 404 as const, body: { error: error.message } };
         }
-        logger.error(
+        this.logger.error(
           { message: 'Error fetching user', error },
           { id: params.id }
         );
@@ -86,12 +86,12 @@ export class UserController {
           return { status: 200 as const, body: user };
         } catch (error) {
           if (error instanceof UserNotFoundException) {
-            logger.warn('User not found by username', {
+            this.logger.warn('User not found by username', {
               username: params.username,
             });
             return { status: 404 as const, body: { error: error.message } };
           }
-          logger.error(
+          this.logger.error(
             { message: 'Error fetching user by username', error },
             { username: params.username }
           );
@@ -118,17 +118,17 @@ export class UserController {
           return { status: 200 as const, body: updatedUser };
         } catch (error) {
           if (error instanceof UserNotFoundException) {
-            logger.warn('User not found for username update', { userId: body });
+            this.logger.warn('User not found for username update', { userId: body });
             return { status: 404 as const, body: { error: error.message } };
           }
           if (error instanceof UsernameAlreadyTakenException) {
-            logger.warn('Username already taken during update', {
+            this.logger.warn('Username already taken during update', {
               userId: body,
               username: body.username,
             });
             return { status: 409 as const, body: { error: error.message } };
           }
-          logger.error(
+          this.logger.error(
             { message: 'Error updating username', error },
             { userId: body }
           );
@@ -152,7 +152,7 @@ export class UserController {
             await this.postService.getPostsByAuthorId(params.id);
           return { status: 200 as const, body: posts };
         } catch (error) {
-          logger.error(
+          this.logger.error(
             { message: 'Error fetching user posts', error },
             { id: params.id }
           );
@@ -210,7 +210,7 @@ export class UserController {
           });
           return { status: 200 as const, body: result };
         } catch (error) {
-          logger.error({
+          this.logger.error({
             message: 'Error uploading profile picture',
             error,
           });
@@ -244,10 +244,10 @@ export class UserController {
           return { status: 401 as const, body: { error: error.message } };
         }
         if (error instanceof UserNotFoundException) {
-          logger.warn('User not found for deletion', { id: params.id });
+          this.logger.warn('User not found for deletion', { id: params.id });
           return { status: 404 as const, body: { error: error.message } };
         }
-        logger.error(
+        this.logger.error(
           { message: 'Error deleting user', error },
           { id: params.id }
         );

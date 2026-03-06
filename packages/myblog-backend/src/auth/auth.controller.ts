@@ -18,10 +18,10 @@ import {
 import { AuthService } from './auth.service.js';
 import { UserService } from '../users/user.service.js';
 
-const logger = new AppLogger('AuthController');
-
 @Controller()
 export class AuthController {
+  private readonly logger = new AppLogger(AuthController.name);
+
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService
@@ -44,12 +44,12 @@ export class AuthController {
         };
       } catch (error) {
         if (error instanceof WrongCredentialsException) {
-          logger.warn('Registration failed: wrong credentials', {
+          this.logger.warn('Registration failed: wrong credentials', {
             email: body.email,
           });
           return { status: 400 as const, body: { error: error.message } };
         }
-        logger.error(
+        this.logger.error(
           { message: 'Error registering user', error },
           { email: body.email }
         );
@@ -69,32 +69,32 @@ export class AuthController {
         return { status: 200 as const, body: loginResponse };
       } catch (error) {
         if (error instanceof WrongCredentialsException) {
-          logger.warn('Login failed: wrong credentials', { email: body.email });
+          this.logger.warn('Login failed: wrong credentials', { email: body.email });
           return { status: 401 as const, body: { error: error.message } };
         }
         if (error instanceof AuthenticationTokenMissingException) {
-          logger.warn('Login failed: authentication token missing', {
+          this.logger.warn('Login failed: authentication token missing', {
             email: body.email,
           });
           return { status: 401 as const, body: { error: error.message } };
         }
         if (error instanceof WrongAuthenticationTokenException) {
-          logger.warn('Login failed: wrong authentication token', {
+          this.logger.warn('Login failed: wrong authentication token', {
             email: body.email,
           });
           return { status: 401 as const, body: { error: error.message } };
         }
         if (error instanceof PasswordResetRequiredException) {
-          logger.warn('Login failed: password reset required', {
+          this.logger.warn('Login failed: password reset required', {
             email: body.email,
           });
           return { status: 401 as const, body: { error: error.message } };
         }
         if (error instanceof UserNotActiveException) {
-          logger.warn('Login failed: user not active', { email: body.email });
+          this.logger.warn('Login failed: user not active', { email: body.email });
           return { status: 401 as const, body: { error: error.message } };
         }
-        logger.error(
+        this.logger.error(
           { message: 'Error logging in user', error },
           { email: body.email }
         );
@@ -119,26 +119,26 @@ export class AuthController {
         };
       } catch (error) {
         if (error instanceof WrongCredentialsException) {
-          logger.warn('Change password failed: wrong current password');
+          this.logger.warn('Change password failed: wrong current password');
           return { status: 400 as const, body: { error: error.message } };
         }
         if (error instanceof AuthenticationTokenMissingException) {
-          logger.warn('Change password failed: authentication token missing');
+          this.logger.warn('Change password failed: authentication token missing');
           return { status: 401 as const, body: { error: error.message } };
         }
         if (error instanceof WrongAuthenticationTokenException) {
-          logger.warn('Change password failed: wrong authentication token');
+          this.logger.warn('Change password failed: wrong authentication token');
           return { status: 401 as const, body: { error: error.message } };
         }
         if (error instanceof PasswordResetRequiredException) {
-          logger.warn('Change password failed: password reset required');
+          this.logger.warn('Change password failed: password reset required');
           return { status: 401 as const, body: { error: error.message } };
         }
         if (error instanceof UserNotActiveException) {
-          logger.warn('Change password failed: user not active');
+          this.logger.warn('Change password failed: user not active');
           return { status: 401 as const, body: { error: error.message } };
         }
-        logger.error({ message: 'Error changing password', error });
+        this.logger.error({ message: 'Error changing password', error });
         return {
           status: 500 as const,
           body: { error: serializeError(error) },
@@ -154,7 +154,7 @@ export class AuthController {
         const result = await this.authService.requestPasswordReset(body.email);
         return { status: 200 as const, body: result };
       } catch (error) {
-        logger.error(
+        this.logger.error(
           { message: 'Error requesting password reset', error },
           { email: body.email }
         );
@@ -181,12 +181,12 @@ export class AuthController {
         };
       } catch (error) {
         if (error instanceof WrongCredentialsException) {
-          logger.warn('Reset password confirm failed: wrong verification code', {
+          this.logger.warn('Reset password confirm failed: wrong verification code', {
             userId: body.userId,
           });
           return { status: 400 as const, body: { error: error.message } };
         }
-        logger.error(
+        this.logger.error(
           { message: 'Error confirming password reset', error },
           { userId: body.userId }
         );
@@ -201,7 +201,7 @@ export class AuthController {
   @TsRestHandler(contract.auth.logout)
   logout() {
     return tsRestHandler(contract.auth.logout, async () => {
-      logger.info('Logout requested');
+      this.logger.info('Logout requested');
       return {
         status: 200 as const,
         body: { message: 'Logged out successfully' },
@@ -217,7 +217,7 @@ export class AuthController {
         const user = await this.userService.getUserById(currentUser.userId);
         return { status: 200 as const, body: user };
       } catch (error) {
-        logger.error({ message: 'Error getting current user', error });
+        this.logger.error({ message: 'Error getting current user', error });
         return {
           status: 500 as const,
           body: { error: serializeError(error) },
@@ -254,14 +254,14 @@ export class AuthController {
         return { status: 200 as const, body: {} };
       } catch (error) {
         if (error instanceof AuthenticationTokenMissingException) {
-          logger.warn('Turn on 2FA failed: authentication token missing');
+          this.logger.warn('Turn on 2FA failed: authentication token missing');
           return { status: 401 as const, body: { error: error.message } };
         }
         if (error instanceof WrongAuthenticationTokenException) {
-          logger.warn('Turn on 2FA failed: wrong authentication token');
+          this.logger.warn('Turn on 2FA failed: wrong authentication token');
           return { status: 401 as const, body: { error: error.message } };
         }
-        logger.error({ message: 'Error turning on 2FA', error });
+        this.logger.error({ message: 'Error turning on 2FA', error });
         return {
           status: 500 as const,
           body: { error: serializeError(error) },
@@ -279,14 +279,14 @@ export class AuthController {
         return { status: 200 as const, body: {} };
       } catch (error) {
         if (error instanceof AuthenticationTokenMissingException) {
-          logger.warn('Turn off 2FA failed: authentication token missing');
+          this.logger.warn('Turn off 2FA failed: authentication token missing');
           return { status: 401 as const, body: { error: error.message } };
         }
         if (error instanceof WrongAuthenticationTokenException) {
-          logger.warn('Turn off 2FA failed: wrong authentication token');
+          this.logger.warn('Turn off 2FA failed: wrong authentication token');
           return { status: 401 as const, body: { error: error.message } };
         }
-        logger.error({ message: 'Error turning off 2FA', error });
+        this.logger.error({ message: 'Error turning off 2FA', error });
         return {
           status: 500 as const,
           body: { error: serializeError(error) },
@@ -317,16 +317,16 @@ export class AuthController {
           };
         } catch (error) {
           if (error instanceof AuthenticationTokenMissingException) {
-            logger.warn(
+            this.logger.warn(
               '2FA authentication failed: authentication token missing'
             );
             return { status: 401 as const, body: { error: error.message } };
           }
           if (error instanceof WrongAuthenticationTokenException) {
-            logger.warn('2FA authentication failed: wrong authentication token');
+            this.logger.warn('2FA authentication failed: wrong authentication token');
             return { status: 401 as const, body: { error: error.message } };
           }
-          logger.error({ message: 'Error authenticating 2FA', error });
+          this.logger.error({ message: 'Error authenticating 2FA', error });
           return {
             status: 500 as const,
             body: { error: serializeError(error) },
