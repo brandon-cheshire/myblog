@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserRepository } from '../users/user.repository.js';
-import { getJwtConfig } from './auth.config.js';
 import type { RequestUser } from './auth.types.js';
 import {
   WrongAuthenticationTokenException,
   PasswordResetRequiredException,
   UserNotActiveException,
 } from './auth.errors.js';
+import { AppConfigService } from '../appconfig/appconfig.service.js';
 
 interface JwtPayload {
   sub: string;
@@ -18,8 +18,13 @@ interface JwtPayload {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(private readonly userRepository: UserRepository) {
-    const { secret } = getJwtConfig();
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly appConfigService: AppConfigService
+  ) {
+    const {
+      jwtConfig: { secret },
+    } = appConfigService.get();
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,

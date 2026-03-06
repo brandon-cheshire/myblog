@@ -21,7 +21,7 @@ import type { User } from '@myblog/shared';
 import type { UserWithPasswordHash } from '../users/user.types';
 import { AppLogger } from '../common/utils/app-logger/app-logger';
 import type { JwtPayload } from '@myblog/shared/auth/auth.types';
-import { getJwtConfig } from './auth.config';
+import { AppConfigService } from '../appconfig/appconfig.service';
 
 export interface TokenData {
   token: string;
@@ -38,14 +38,22 @@ export class AuthService {
 
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly appConfigService: AppConfigService
   ) {}
+
+  private getJwtConfig() {
+    const {
+      jwtConfig: { secret, expiresInSeconds },
+    } = this.appConfigService.get();
+    return { secret, expiresInSeconds };
+  }
 
   async getUserFromToken(params: {
     token: string;
     omitSecondFactor?: boolean;
   }): Promise<User> {
-    const { secret } = getJwtConfig();
+    const { secret } = this.getJwtConfig();
 
     try {
       const verificationResponse = jwt.verify(
@@ -110,7 +118,7 @@ export class AuthService {
     user: { id: string; email: string },
     isSecondFactorAuthenticated = false
   ): TokenData {
-    const { secret, expiresInSeconds } = getJwtConfig();
+    const { secret, expiresInSeconds } = this.getJwtConfig();
     const payload: MyblogJwtPayload = {
       email: user.email,
       sub: user.id,

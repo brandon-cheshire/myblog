@@ -1,5 +1,4 @@
-import { Controller, Inject, Scope, UseGuards } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
+import { Controller, Req, Res, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { contract } from '@myblog/shared';
@@ -21,18 +20,11 @@ import { UserService } from '../users/user.service.js';
 
 const logger = new AppLogger('AuthController');
 
-function headersRecord(
-  headers: unknown
-): Record<string, string | string[] | undefined> {
-  return (headers ?? {}) as Record<string, string | string[] | undefined>;
-}
-
-@Controller({ scope: Scope.REQUEST })
+@Controller()
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UserService,
-    @Inject(REQUEST) private readonly request: Request & { res?: Response }
+    private readonly userService: UserService
   ) {}
 
   @TsRestHandler(contract.auth.register)
@@ -236,10 +228,11 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.auth.generateTwoFactor)
-  generateTwoFactor(@CurrentUser() user: RequestUser) {
+  generateTwoFactor(
+    @CurrentUser() user: RequestUser,
+    @Res() res: Response
+  ) {
     return tsRestHandler(contract.auth.generateTwoFactor, async () => {
-      const res = this.request.res;
-      if (!res) throw new Error('Response not available');
       res.status(200);
       await this.authService.generateTwoFactor(user.userId, res);
       throw new Error('STREAMING_RESPONSE_SENT');
@@ -247,10 +240,10 @@ export class AuthController {
   }
 
   @TsRestHandler(contract.auth.turnOnTwoFactor)
-  turnOnTwoFactor() {
-    return tsRestHandler(contract.auth.turnOnTwoFactor, async ({ body, headers }) => {
+  turnOnTwoFactor(@Req() req: Request) {
+    return tsRestHandler(contract.auth.turnOnTwoFactor, async ({ body }) => {
       try {
-        const token = getTokenFromHeaders(headersRecord(headers));
+        const token = getTokenFromHeaders(req.headers);
         if (!token) throw new AuthenticationTokenMissingException();
         const user = await this.authService.getUserFromToken({ token });
         await this.authService.enableTwoFactor({
@@ -303,12 +296,12 @@ export class AuthController {
   }
 
   @TsRestHandler(contract.auth.authenticateTwoFactor)
-  authenticateTwoFactor() {
+  authenticateTwoFactor(@Req() req: Request) {
     return tsRestHandler(
       contract.auth.authenticateTwoFactor,
-      async ({ body, headers }) => {
+      async ({ body }) => {
         try {
-          const token = getTokenFromHeaders(headersRecord(headers));
+          const token = getTokenFromHeaders(req.headers);
           if (!token) throw new AuthenticationTokenMissingException();
           const user = await this.authService.getUserFromToken({
             token,

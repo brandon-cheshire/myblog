@@ -4,8 +4,8 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { UsersModule } from '../users/users.module.js';
-import { getJwtConfig } from './auth.config.js';
 import { JwtStrategy } from './jwt.strategy.js';
+import { AppConfigService } from '../appconfig/appconfig.service.js';
 
 /**
  * Auth module (3-layer: Controller → Service → Repository via UserService).
@@ -18,8 +18,11 @@ import { JwtStrategy } from './jwt.strategy.js';
     forwardRef(() => UsersModule),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
-      useFactory: () => {
-        const { secret, expiresInSeconds } = getJwtConfig();
+      inject: [AppConfigService],
+      useFactory: (appConfigService: AppConfigService) => {
+        const {
+          jwtConfig: { secret, expiresInSeconds },
+        } = appConfigService.get();
         return {
           secret,
           signOptions: { expiresIn: expiresInSeconds },

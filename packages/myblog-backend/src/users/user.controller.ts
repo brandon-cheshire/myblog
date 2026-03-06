@@ -1,5 +1,4 @@
-import { Controller, Inject, Scope, UseGuards } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
+import { Controller, Req, Res, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { contract } from '@myblog/shared';
@@ -23,12 +22,11 @@ import { PostService } from '../posts/post.service.js';
 
 const logger = new AppLogger('UserController');
 
-@Controller({ scope: Scope.REQUEST })
+@Controller()
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly postService: PostService,
-    @Inject(REQUEST) private readonly request: Request & { res?: Response }
+    private readonly postService: PostService
   ) {}
 
   @TsRestHandler(contract.users.create)
@@ -169,16 +167,18 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.users.uploadProfilePicture)
-  uploadProfilePicture(@CurrentUser() user: RequestUser) {
+  uploadProfilePicture(
+    @CurrentUser() user: RequestUser,
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
     return tsRestHandler(
       contract.users.uploadProfilePicture,
       async () => {
         try {
-          const res = this.request.res;
-          if (!res) throw new Error('Response not available');
           let file: Express.Multer.File;
           try {
-            file = await processMulterUpload(this.request, res);
+            file = await processMulterUpload(req, res);
           } catch (uploadError: unknown) {
             const err = uploadError as { message?: string; code?: string };
             if (err.message === 'No file uploaded') {
