@@ -1,27 +1,19 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { contract } from '@myblog/shared';
-import { getAuthPrincipalFromHeaders } from '../auth/auth.helper.js';
+import { CurrentUser } from '../auth/current-user.decorator.js';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import type { RequestUser } from '../auth/auth.types.js';
 import { AppLogger } from '../common/utils/app-logger/app-logger.js';
 import { serializeError } from '../common/utils/serializeError.js';
 import { PostNotFoundException, NotAuthorizedException } from './post.errors.js';
-import { AuthService } from '../auth/auth.service.js';
 import { PostService } from './post.service.js';
 
 const logger = new AppLogger('PostsController');
 
-function headersRecord(
-  headers: unknown
-): Record<string, string | string[] | undefined> {
-  return (headers ?? {}) as Record<string, string | string[] | undefined>;
-}
-
 @Controller()
 export class PostsController {
-  constructor(
-    private readonly postService: PostService,
-    private readonly authService: AuthService
-  ) {}
+  constructor(private readonly postService: PostService) {}
 
   @TsRestHandler(contract.posts.getPosts)
   getPosts() {
@@ -59,18 +51,15 @@ export class PostsController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.posts.createPost)
-  createPost() {
-    return tsRestHandler(contract.posts.createPost, async ({ body, headers }) => {
+  createPost(@CurrentUser() user: RequestUser) {
+    return tsRestHandler(contract.posts.createPost, async ({ body }) => {
       try {
-        const { userId } = await getAuthPrincipalFromHeaders(
-          headersRecord(headers),
-          this.authService
-        );
         const post = await this.postService.createPost({
           title: body.title,
           content: body.content,
-          authorId: userId,
+          authorId: user.userId,
         });
         return { status: 201 as const, body: post };
       } catch (error) {
@@ -90,19 +79,16 @@ export class PostsController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.posts.updatePost)
-  updatePost() {
+  updatePost(@CurrentUser() user: RequestUser) {
     return tsRestHandler(
       contract.posts.updatePost,
-      async ({ params, body, headers }) => {
+      async ({ params, body }) => {
         try {
-          const { userId } = await getAuthPrincipalFromHeaders(
-            headersRecord(headers),
-            this.authService
-          );
           const post = await this.postService.updatePost({
             postId: params.id,
-            authorId: userId,
+            authorId: user.userId,
             updates: { title: body.title, content: body.content },
           });
           return { status: 200 as const, body: post };
@@ -128,19 +114,16 @@ export class PostsController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.posts.deletePost)
-  deletePost() {
+  deletePost(@CurrentUser() user: RequestUser) {
     return tsRestHandler(
       contract.posts.deletePost,
-      async ({ params, headers }) => {
+      async ({ params }) => {
         try {
-          const { userId } = await getAuthPrincipalFromHeaders(
-            headersRecord(headers),
-            this.authService
-          );
           await this.postService.deletePost({
             postId: params.id,
-            authorId: userId,
+            authorId: user.userId,
           });
           return { status: 200 as const, body: {} };
         } catch (error) {

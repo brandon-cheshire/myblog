@@ -1,9 +1,11 @@
-import { Controller, Inject, Scope } from '@nestjs/common';
+import { Controller, Inject, Scope, UseGuards } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import type { Request, Response } from 'express';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { contract } from '@myblog/shared';
-import { getAuthPrincipalFromHeaders } from '../auth/auth.helper.js';
+import { CurrentUser } from '../auth/current-user.decorator.js';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import type { RequestUser } from '../auth/auth.types.js';
 import {
   UserNotFoundException,
   UserWithThatEmailAlreadyExistsException,
@@ -16,24 +18,16 @@ import {
 import { AppLogger } from '../common/utils/app-logger/app-logger.js';
 import { serializeError } from '../common/utils/serializeError.js';
 import { processMulterUpload } from '../utils/upload.utils.js';
-import { AuthService } from '../auth/auth.service.js';
 import { UserService } from './user.service.js';
 import { PostService } from '../posts/post.service.js';
 
 const logger = new AppLogger('UserController');
-
-function headersRecord(
-  headers: unknown
-): Record<string, string | string[] | undefined> {
-  return (headers ?? {}) as Record<string, string | string[] | undefined>;
-}
 
 @Controller({ scope: Scope.REQUEST })
 export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly postService: PostService,
-    private readonly authService: AuthService,
     @Inject(REQUEST) private readonly request: Request & { res?: Response }
   ) {}
 
@@ -112,18 +106,15 @@ export class UserController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.users.updateUsername)
-  updateUsername() {
+  updateUsername(@CurrentUser() user: RequestUser) {
     return tsRestHandler(
       contract.users.updateUsername,
-      async ({ body, headers }) => {
+      async ({ body }) => {
         try {
-          const { userId } = await getAuthPrincipalFromHeaders(
-            headersRecord(headers),
-            this.authService
-          );
           const updatedUser = await this.userService.updateUsername({
-            userId,
+            userId: user.userId,
             username: body.username,
           });
           return { status: 200 as const, body: updatedUser };
@@ -152,16 +143,13 @@ export class UserController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.users.getUserPosts)
   getUserPosts() {
     return tsRestHandler(
       contract.users.getUserPosts,
-      async ({ params, headers }) => {
+      async ({ params }) => {
         try {
-          await getAuthPrincipalFromHeaders(
-            headersRecord(headers),
-            this.authService
-          );
           const posts =
             await this.postService.getPostsByAuthorId(params.id);
           return { status: 200 as const, body: posts };
@@ -179,16 +167,13 @@ export class UserController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.users.uploadProfilePicture)
-  uploadProfilePicture() {
+  uploadProfilePicture(@CurrentUser() user: RequestUser) {
     return tsRestHandler(
       contract.users.uploadProfilePicture,
       async () => {
         try {
-          const { userId } = await getAuthPrincipalFromHeaders(
-            headersRecord(this.request.headers),
-            this.authService
-          );
           const res = this.request.res;
           if (!res) throw new Error('Response not available');
           let file: Express.Multer.File;
@@ -220,7 +205,7 @@ export class UserController {
             };
           }
           const result = await this.userService.uploadProfilePicture({
-            userId,
+            userId: user.userId,
             file,
           });
           return { status: 200 as const, body: result };
@@ -238,15 +223,12 @@ export class UserController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.users.delete)
-  delete() {
-    return tsRestHandler(contract.users.delete, async ({ params, headers }) => {
+  delete(@CurrentUser() user: RequestUser) {
+    return tsRestHandler(contract.users.delete, async ({ params }) => {
       try {
-        const { userId } = await getAuthPrincipalFromHeaders(
-          headersRecord(headers),
-          this.authService
-        );
-        if (userId !== params.id) {
+        if (user.userId !== params.id) {
           return {
             status: 403 as const,
             body: { error: 'You can only delete your own account' },

@@ -1,12 +1,12 @@
-import { Controller, Inject, Scope } from '@nestjs/common';
+import { Controller, Inject, Scope, UseGuards } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import type { Request, Response } from 'express';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { contract } from '@myblog/shared';
-import {
-  getAuthPrincipalFromHeaders,
-  getTokenFromHeaders,
-} from './auth.helper.js';
+import { getTokenFromHeaders } from './auth.helper.js';
+import { CurrentUser } from './current-user.decorator.js';
+import { JwtAuthGuard } from './jwt-auth.guard.js';
+import type { RequestUser } from './auth.types.js';
 import { AppLogger } from '../common/utils/app-logger/app-logger.js';
 import { serializeError } from '../common/utils/serializeError.js';
 import {
@@ -17,6 +17,7 @@ import {
   WrongCredentialsException,
 } from './auth.errors.js';
 import { AuthService } from './auth.service.js';
+import { UserService } from '../users/user.service.js';
 
 const logger = new AppLogger('AuthController');
 
@@ -30,6 +31,7 @@ function headersRecord(
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly userService: UserService,
     @Inject(REQUEST) private readonly request: Request & { res?: Response }
   ) {}
 
@@ -109,16 +111,13 @@ export class AuthController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.auth.changePassword)
-  changePassword() {
-    return tsRestHandler(contract.auth.changePassword, async ({ body, headers }) => {
+  changePassword(@CurrentUser() user: RequestUser) {
+    return tsRestHandler(contract.auth.changePassword, async ({ body }) => {
       try {
-        const { userId } = await getAuthPrincipalFromHeaders(
-          headersRecord(headers),
-          this.authService
-        );
         await this.authService.changePassword({
-          userId,
+          userId: user.userId,
           currentPassword: body.currentPassword,
           newPassword: body.newPassword,
         });
@@ -218,31 +217,14 @@ export class AuthController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.auth.getCurrentUser)
-  getCurrentUser() {
-    return tsRestHandler(contract.auth.getCurrentUser, async ({ headers }) => {
+  getCurrentUser(@CurrentUser() currentUser: RequestUser) {
+    return tsRestHandler(contract.auth.getCurrentUser, async () => {
       try {
-        const token = getTokenFromHeaders(headersRecord(headers));
-        if (!token) throw new AuthenticationTokenMissingException();
-        const user = await this.authService.getUserFromToken({ token });
+        const user = await this.userService.getUserById(currentUser.userId);
         return { status: 200 as const, body: user };
       } catch (error) {
-        if (error instanceof AuthenticationTokenMissingException) {
-          logger.warn('Get current user failed: authentication token missing');
-          return { status: 401 as const, body: { error: error.message } };
-        }
-        if (error instanceof WrongAuthenticationTokenException) {
-          logger.warn('Get current user failed: wrong authentication token');
-          return { status: 401 as const, body: { error: error.message } };
-        }
-        if (error instanceof PasswordResetRequiredException) {
-          logger.warn('Get current user failed: password reset required');
-          return { status: 401 as const, body: { error: error.message } };
-        }
-        if (error instanceof UserNotActiveException) {
-          logger.warn('Get current user failed: user not active');
-          return { status: 401 as const, body: { error: error.message } };
-        }
         logger.error({ message: 'Error getting current user', error });
         return {
           status: 500 as const,
@@ -252,17 +234,14 @@ export class AuthController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.auth.generateTwoFactor)
-  generateTwoFactor() {
-    return tsRestHandler(contract.auth.generateTwoFactor, async ({ headers }) => {
-      const { userId } = await getAuthPrincipalFromHeaders(
-        headersRecord(headers),
-        this.authService
-      );
+  generateTwoFactor(@CurrentUser() user: RequestUser) {
+    return tsRestHandler(contract.auth.generateTwoFactor, async () => {
       const res = this.request.res;
       if (!res) throw new Error('Response not available');
       res.status(200);
-      await this.authService.generateTwoFactor(userId, res);
+      await this.authService.generateTwoFactor(user.userId, res);
       throw new Error('STREAMING_RESPONSE_SENT');
     });
   }
@@ -298,15 +277,12 @@ export class AuthController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
   @TsRestHandler(contract.auth.turnOffTwoFactor)
-  turnOffTwoFactor() {
-    return tsRestHandler(contract.auth.turnOffTwoFactor, async ({ headers }) => {
+  turnOffTwoFactor(@CurrentUser() user: RequestUser) {
+    return tsRestHandler(contract.auth.turnOffTwoFactor, async () => {
       try {
-        const { userId } = await getAuthPrincipalFromHeaders(
-          headersRecord(headers),
-          this.authService
-        );
-        await this.authService.disableTwoFactor(userId);
+        await this.authService.disableTwoFactor(user.userId);
         return { status: 200 as const, body: {} };
       } catch (error) {
         if (error instanceof AuthenticationTokenMissingException) {
